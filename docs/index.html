@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VB-G RAM G फॉर्म सहाय्यक</title>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f6f7f4;--card:#fff;--tx:#1d2a20;--mu:#5d6b61;--ac:#1f7a3d;--bd:#d8ddd6;--er:#b3261e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -93,6 +94,12 @@ summary{cursor:pointer}
    <label>Personal Access Token (फक्त या repo ला Contents: Read &amp; write)</label><input type="password" id="gh_t">
    <p><button id="pub">🚀 प्रकाशित करा</button> <button class="o" id="exp">पॅक डाउनलोड</button> <button class="d" id="drop">ड्राफ्ट रद्द करा</button></p>
    <p class="mu" id="pubmsg"></p>
+  </div>
+  <div class="card">
+   <h2 style="margin-top:0">Admin PIN बदला</h2>
+   <p class="mu">वरील GitHub माहिती (विशेषतः token) भरलेली असावी. नवीन PIN सर्व वापरकर्त्यांसाठी Admin उघडण्यास लागू होईल.</p>
+   <label>नवीन PIN (किमान ४ अंक)</label><input id="newpin" type="password" inputmode="numeric">
+   <p><button id="pinchg">PIN बदला</button> <span class="mu" id="pinres"></span></p>
   </div>
  </div>
  <div id="ped" class="card hide">
@@ -218,21 +225,32 @@ function marathiCheck(){
 /* ---- PDF तयार करणे ---- */
 async function build(){
  await document.fonts.load('600 16px '+FONT,'अआक');
- const fs=+$('#fs').value||10,out=$('#out');out.innerHTML='';canv=[];
+ const fs=+$('#fs').value||10,out=$('#out');out.innerHTML='';canv=[];let SKIP=0;
  for(const[id,n]of W.p){
   const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:2}),c=document.createElement('canvas');
   c.width=vp.width;c.height=vp.height;const ctx=c.getContext('2d');
   await pg.render({canvasContext:ctx,viewport:vp}).promise;
-  ctx.fillStyle='#000';ctx.textBaseline='alphabetic';ctx.font=`600 ${fs*2}px ${FONT}`;
+  ctx.textBaseline='alphabetic';const plan=[],big=fs*2;
   pl(id,n).forEach(q=>{
-   if(!q.k||(q.s&&!W.sam))return;const[x,y]=vp.convertToViewportPoint(q.x,q.y);
-   if(q.bx){const s=(V[q.k]||'').replace(/[^0-9A-Za-z]/g,''),bx=q.bx,nb=bx.length-1;ctx.textAlign='center';
-    [...s].forEach((ch,i)=>{let a,b;if(i<nb){a=bx[i];b=bx[i+1]}else{const p=bx[nb]-bx[nb-1];a=bx[nb]+(i-nb)*p;b=a+p}
+   if(!q.k||(q.s&&!W.sam))return;
+   if(q.bx){plan.push({q,box:1});return}
+   const v=val(q.k);if(!v)return;
+   const lim=Math.max(q.w||0,q.mw||0)*2;let f=big;ctx.font=`600 ${f}px ${FONT}`;let tw=ctx.measureText(v).width;
+   if(lim>20&&tw>lim){const sc=lim/tw;if(sc<.45){SKIP++;return}f=big*Math.max(.8,sc);ctx.font=`600 ${f}px ${FONT}`}
+   plan.push({q,v,f,lim:(lim>20&&tw>lim)?lim:0})});
+  /* १) ज्या जागी माहिती येणार तिथल्या रेषा / ठिपके पुसणे (माहिती नसेल तिथे रेषा तशीच राहते) */
+  ctx.fillStyle='#fff';
+  plan.forEach(p=>{if(p.box)return;const[a1,b1]=vp.convertToViewportPoint(p.q.x-1.5,p.q.y+5),[a2,b2]=vp.convertToViewportPoint(p.q.x+p.q.w+1,p.q.y-4.5);ctx.fillRect(a1,b1,a2-a1,b2-b1)});
+  /* २) मजकूर छापणे */
+  ctx.fillStyle='#000';
+  plan.forEach(p=>{const q=p.q,[x,y]=vp.convertToViewportPoint(q.x,q.y);
+   if(p.box){const s=(V[q.k]||'').replace(/[^0-9A-Za-z]/g,''),bx=q.bx,nb=bx.length-1;ctx.font=`600 ${big}px ${FONT}`;ctx.textAlign='center';
+    [...s].forEach((ch,i)=>{let a,b;if(i<nb){a=bx[i];b=bx[i+1]}else{const w=bx[nb]-bx[nb-1];a=bx[nb]+(i-nb)*w;b=a+w}
      const x0=vp.convertToViewportPoint(a,0)[0],x1=vp.convertToViewportPoint(b,0)[0];ctx.fillText(ch,(x0+x1)/2,y)});ctx.textAlign='left';return}
-   const v=val(q.k);if(!v)return;ctx.fillText(v,x,y,q.w>18?q.w*2:undefined)});
+   ctx.font=`600 ${p.f}px ${FONT}`;p.lim?ctx.fillText(p.v,x,y,p.lim):ctx.fillText(p.v,x,y)});
   canv.push({c,w:pg.view[2]-pg.view[0],h:pg.view[3]-pg.view[1]});out.appendChild(c);
  }
- $('#p1').classList.add('hide');$('#res').classList.remove('hide');$('#msg').textContent='पूर्वावलोकन तपासा, नंतर प्रिंट किंवा डाउनलोड करा.';
+ $('#p1').classList.add('hide');$('#res').classList.remove('hide');$('#msg').textContent='पूर्वावलोकन तपासा, नंतर प्रिंट किंवा डाउनलोड करा.'+(SKIP?` (${SKIP} ठिकाणी जागा खूप कमी असल्याने ती रेषा/ठिपके तसेच ठेवले आहेत.)`:'');
 }
 $('#gen').onclick=async()=>{
  if(!W)return;const bad=marathiCheck();
@@ -398,6 +416,12 @@ $('#pub').onclick=async()=>{
   m.textContent='कामांची यादी अपलोड…';await ghPut(g,d+'data/works.json',u2b64(new TextEncoder().encode(JSON.stringify(CAT))),'कामे अपडेट');
   await kv('readwrite',s=>s.delete('overlay'));OV=false;NEWB={};draftNote();m.textContent='✅ प्रकाशित झाले. १-२ मिनिटांत सर्व वापरकर्त्यांच्या ॲपमध्ये दिसेल.';
  }catch(e){m.textContent='❌ '+e.message}
+};
+$('#pinchg').onclick=async()=>{
+ const p=$('#newpin').value.trim(),m=$('#pinres'),g=ghCfg();if(p.length<4){m.textContent='किमान ४ अंक.';return}
+ if(!g.o||!g.r||!g.t){m.textContent='आधी GitHub माहिती भरा.';return}
+ let d=g.d||'';if(d&&!d.endsWith('/'))d+='/';
+ try{const h=await sha(p);await ghPut(g,d+'data/config.json',u2b64(new TextEncoder().encode(JSON.stringify({pinHash:h}))),'PIN बदलला');PIN=h;$('#newpin').value='';m.textContent='✅ PIN बदलला. १-२ मिनिटांत सर्वत्र लागू.'}catch(e){m.textContent='❌ '+e.message}
 };
 $('#exp').onclick=async()=>{await saveBytes(new TextEncoder().encode(JSON.stringify(CAT)),'works.json')};
 $('#drop').onclick=async()=>{if(!confirm('तुमचे ड्राफ्ट बदल रद्द करायचे?'))return;await kv('readwrite',s=>s.delete('overlay'));location.reload()};
