@@ -22,3 +22,6 @@
 ## ४) Admin PIN बदलणे
 नवीन PIN चा SHA-256 hash काढा (उदा. https://emn178.github.io/online-tools/sha256.html) आणि `docs/data/config.json` मधील `pinHash` बदला.
 (टीप: हे सोपे संरक्षण आहे; GitHub token खरे संरक्षण देतो – token फक्त Admin कडेच ठेवा.)
+
+## लोगो (ॲप आयकॉन)
+ॲपचा आयकॉन "जीआरएस संघटना तालुका सातारा" गोल लोगो आहे (`android/app/src/main/res/mipmap-*`). लोगो बदलायचा असेल तर त्या फोल्डरमधील `ic_launcher.png`, `ic_launcher_round.png` आणि `ic_launcher_foreground.png` फाईल्स त्याच नावाने बदला; वेबसाठी `docs/logo.png` व `docs/logo192.png`. ॲपचे नाव तेच ठेवले आहे.
