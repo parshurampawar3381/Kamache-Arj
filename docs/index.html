@@ -95,6 +95,11 @@ summary{cursor:pointer}
    <p class="mu" id="pubmsg"></p>
   </div>
   <div class="card">
+   <h2 style="margin-top:0">विकसकाचे नाव</h2>
+   <p class="mu">हे नाव ॲपच्या सर्वात खाली आणि फॉर्मच्या प्रत्येक पानाच्या उजव्या खालच्या कोपऱ्यात लहान अक्षरात येते.</p>
+   <input id="devin" lang="mr"><p><button id="devsave">नाव जतन करा (प्रकाशित)</button> <span class="mu" id="devres"></span></p>
+  </div>
+  <div class="card">
    <h2 style="margin-top:0">Admin PIN बदला</h2>
    <p class="mu">वरील GitHub माहिती (विशेषतः token) भरलेली असावी. नवीन PIN सर्व वापरकर्त्यांसाठी Admin उघडण्यास लागू होईल.</p>
    <label>नवीन PIN (किमान ४ अंक)</label><input id="newpin" type="password" inputmode="numeric">
@@ -109,7 +114,7 @@ summary{cursor:pointer}
    <div id="x_list"></div>
    <h2>➕ नवीन रकाना जोडा</h2>
    <label>रकान्याचे नाव (मराठीत) – PDF मधील मजकुराप्रमाणे लिहा, म्हणजे जागा आपोआप सापडेल</label><input id="x_label" lang="mr" placeholder="उदा. कामाचा सांकेतांक">
-   <label>प्रकार</label><select id="x_type"><option value="t">मजकूर / क्रमांक</option><option value="d">तारीख</option></select>
+   <label>प्रकार</label><select id="x_type"><option value="t">मजकूर / क्रमांक</option><option value="n">अंक (कोणत्याही भाषेत)</option><option value="d">तारीख</option></select>
    <p><button id="x_add">जोडा व जागा शोधा</button></p><p class="mu" id="x_msg"></p>
   </div>
  </div>
@@ -117,12 +122,12 @@ summary{cursor:pointer}
   <h2 style="margin-top:0">जागा तपासा – <span id="pedt"></span></h2>
   <p class="mu">प्रत्येक रिकाम्या जागेसमोर कोणती माहिती छापायची ते निवडा. "तसेच राहू द्या" निवडलेली जागा रिकामीच राहील. नवीन जागेसाठी खालून माहिती निवडून PDF वर क्लिक करा.</p>
   <div id="plist"></div>
-  <label>नवीन जागा – माहिती निवडा, मग पानावर क्लिक करा</label><select id="newkey"></select>
-  <input id="newlabel" lang="mr" placeholder="स्वतंत्र प्रश्नाचे नाव (मराठीत) – फक्त '➕ स्वतंत्र प्रश्न' निवडल्यास" style="margin-top:6px">
+  <label>नवीन जागा – माहिती निवडा, मग खालील कोणत्याही पानावर क्लिक करा</label><select id="newkey"></select>
   <div id="pcan"></div>
   <button id="psave">जतन करा</button> <button class="o" id="pclose">बंद</button>
  </div>
 </section>
+<div id="devf" class="mu noprint" style="text-align:center;padding:18px 0 8px">विकसक: <b id="devn"></b></div>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
@@ -132,6 +137,8 @@ summary{cursor:pointer}
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const FONT='"Noto Sans Devanagari",sans-serif',now=new Date(),TYPES=['वैयक्तिक','सामूहिक','सार्वजनिक'];
+let DEV='परशुराम पवार';
+function setDev(){const e=$('#devn');if(e)e.textContent=DEV;const f=$('#devf');if(f)f.style.display=DEV?'':'none'}
 const FY=(y=>y+'-'+String(y+1).slice(2))(now.getMonth()>=3?now.getFullYear():now.getFullYear()-1);
 const TODAY=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
 const CAT12=['','अनुसूचित जाती','अनुसूचित जमाती','भटक्या जमाती (NT)','भटक्या विमुक्त जमाती (DT)','दारिद्र्य रेषेखालील इतर कुटुंब','महिलाप्रधान कुटुंब','शारीरिक अपंगत्व प्रधान कुटुंब','भूसुधार योजनेचे लाभार्थी','इंदिरा आवास योजनेचे लाभार्थी','अनुसूचित जमातीचे व अन्य परंपरागत वन निवासी','सीमांत शेतकरी (२.५ एकर)','अल्पभूधारक (५ एकर)'];
@@ -145,13 +152,18 @@ const FD=[
 ['बँक',[['acc','बँक खाते क्र.'],['ifsc','IFSC कोड'],['bank','बँकेचे नाव'],['branch','शाखा']]],
 ['अधिकारी / शेतकरी',[['ta','तांत्रिक सहाय्यक नाव',,,,1],['gpo','ग्रामपंचायत अधिकारी नाव',,,,1],['gra','ग्रामरोजगार सहाय्यक नाव',,,,1],['graMob','ग्रामरोजगार सहाय्यक – मोबाईल नं.',,,,1],['far1','क्षेत्र लगतचे शेतकरी १'],['far2','क्षेत्र लगतचे शेतकरी २']]]];
 const FM={};FD.forEach(s=>s[1].forEach(f=>FM[f[0]]={l:f[1],t:f[2]||'t',o:f[3],df:f[4]||'',p:f[5]}));
+const NUMF={aadhar:['d',12,12],graMob:['d',10,10],acc:['d',18],age:['d',3],age2:['d',3],bpl:['d',20],gsPage:['d',6],ha:['f',8],ar:['f',8],ownAcre:['f',8],ownH:['f',8],ownA:['f',8],t1h:['f',8],t1a:['f',8],t2h:['f',8],t2a:['f',8],areaHa:['f',8],no1:['s',14],no2:['s',14],gsNo:['s',14],gat:['s',16],ifsc:['i',11,11]};
+Object.entries(NUMF).forEach(([k,v])=>{if(FM[k])FM[k].num={mode:v[0],max:v[1]||0,exact:v[2]||0}});
+function cleanNum(mode,max,v){let r=String(v||'');
+ if(mode==='d')r=r.replace(/[^0-9०-९]/g,'');else if(mode==='f')r=r.replace(/[^0-9०-९.]/g,'');
+ else if(mode==='s')r=r.replace(/[^0-9\/\-.\u0900-\u097F]/g,'');else if(mode==='i')r=r.toUpperCase().replace(/[^A-Z0-9]/g,'');
+ return max?[...r].slice(0,max).join(''):r}
 const BASE={nm1:'name',nm2:'name',nm3:'name',n2a:'name2',n2b:'name2',n2c:'name2',gsD:'gsDate',gsM:'gsDate',gsY:'gsDate',gsY2:'gsDate',dateD:'date',dateM:'date',dateY:'date',dateY2:'date',dateFull:'date',fy1:'year',fy2:'year',addr:'village'};
 const DL={nm1:'नावाचा पहिला शब्द',nm2:'नावाचा दुसरा शब्द',nm3:'नावाचा उर्वरित भाग',n2a:'नाव-२ पहिला शब्द',n2b:'नाव-२ दुसरा शब्द',n2c:'नाव-२ उर्वरित',gsD:'ठराव दिनांक – दिवस',gsM:'ठराव दिनांक – महिना',gsY:'ठराव दिनांक – वर्ष (४ अंक)',gsY2:'ठराव दिनांक – वर्ष (२ अंक)',dateD:'दिनांक – दिवस',dateM:'दिनांक – महिना',dateY:'दिनांक – वर्ष (४ अंक)',dateY2:'दिनांक – वर्ष (२ अंक)',dateFull:'दिनांक (पूर्ण)',fy1:'साल – सुरुवात (२ अंक)',fy2:'साल – शेवट (२ अंक)',addr:'पूर्ण पत्ता'};
 let KEYOPT='<option value="">— तसेच राहू द्या —</option>'+Object.keys(FM).map(k=>`<option value="${k}">${esc(FM[k].l)}</option>`).join('')+Object.keys(DL).map(k=>`<option value="${k}">${esc(DL[k])}</option>`).join('');
 const nz=l=>(l||'').replace(/[\s:：.\-–_()\[\]\/]/g,'');
-function regCustom(q){if(q.k&&q.k.startsWith('x_')&&!FM[q.k])FM[q.k]={l:q.fl||q.k.slice(2),t:(q.ft==='d'||/दिनांक|तारीख/.test(q.fl||''))?'d':'t',df:'',custom:1}}
+function regCustom(e){FM[e.k]={l:e.l,t:e.t==='d'?'d':'t',df:'',custom:1,num:e.t==='n'?{mode:'s',max:20,exact:0}:undefined}}
 const LATOK=new Set('aadhar graMob ifsc acc job job2 no1 no2 gat gsNo gsPage age age2 ha ar ownAcre ownH ownA t1h t1a t2h t2a areaHa bpl date gsDate'.split(' '));
-KEYOPT+='<option value="__x">➕ स्वतंत्र प्रश्न (नाव लिहा)</option>';
 const b64u=b=>{const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u};
 const u2b64=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
 /* ---- साठवण (IndexedDB) ---- */
@@ -165,7 +177,7 @@ async function loadCat(){
  if(EMBED){CAT=JSON.parse(JSON.stringify(EMBED.cat));return}
  try{CAT=await(await fetch('data/works.json?t='+Date.now(),{cache:'no-store'})).json();try{localStorage.setItem('vbg_cat',JSON.stringify(CAT))}catch(e){}}
  catch(e){const c=localStorage.getItem('vbg_cat');if(c)CAT=JSON.parse(c);else throw e}
- fetch('data/config.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(c=>{if(c.pinHash)PIN=c.pinHash}).catch(()=>{});
+ fetch('data/config.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(c=>{if(c.pinHash)PIN=c.pinHash;if(typeof c.developer==='string'){DEV=c.developer;setDev()}}).catch(()=>{});
 }
 async function saveOV(){OV=true;const bl={};Object.entries(NEWB).forEach(([k,v])=>bl[k]=v.slice().buffer);await kv('readwrite',s=>s.put({cat:CAT,blobs:bl},'overlay'));refreshUser();draftNote()}
 async function pdfBytes(id){
@@ -180,7 +192,7 @@ Object.keys(FM).forEach(k=>V[k]=FM[k].df);
 try{const o=JSON.parse(localStorage.getItem('vbg3')||'{}');Object.keys(FM).forEach(k=>{if(FM[k].p&&o[k])V[k]=o[k]})}catch(e){}
 const keep=()=>{try{const o={};Object.keys(FM).forEach(k=>{if(FM[k].p)o[k]=V[k]});localStorage.setItem('vbg3',JSON.stringify(o))}catch(e){}};
 const sp=s=>(s||'').trim().split(/\s+/).filter(Boolean),dp=s=>{const a=(s||'').split('-');return a.length==3?{d:a[2],m:a[1],y:a[0]}:{d:'',m:'',y:''}};
-function fmtJob(r){r=(r||'').replace(/[^0-9A-Za-z]/g,'');if(!r)return'';const p=[r.slice(0,2),r.slice(2,5),r.slice(5,8),r.slice(8,11)].filter(Boolean).join('-');return'MH-'+p+(r.length>11?'/'+r.slice(11,15):'')+(r.length>15?'-'+r.slice(15):'')}
+function fmtJob(r){r=[...(r||'').replace(/[^0-9०-९]/g,'')];if(!r.length)return'';const p=[r.slice(0,2),r.slice(2,5),r.slice(5,8),r.slice(8,11)].map(x=>x.join('')).filter(Boolean).join('-');return'MH-'+p+(r.length>11?'/'+r.slice(11,15).join(''):'')+(r.length>15?'-'+r.slice(15).join(''):'')}
 function val(k){
  const v=x=>(V[x]||'').trim();
  switch(k){
@@ -207,7 +219,7 @@ function fillWorks(){
 $('#ctype').onchange=fillWorks;
 $('#work').onchange=()=>{const i=$('#work').value;W=i===''?null:CAT.works[+i];$('#fcard').classList.toggle('hide',!W);if(W){V.work=W.w;form()}};
 const pl=(id,n)=>CAT.pages[id+':'+n]||[];
-function placements(){const r=[];W.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.s&&!W.sam)return;if(q.k){regCustom(q);r.push(q)}}));return r}
+function placements(){const r=[],ex=new Set((W.ex||[]).map(e=>e.k));(W.ex||[]).forEach(regCustom);W.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.s&&!W.sam)return;if(!q.k)return;if(q.k.startsWith('x_')&&!ex.has(q.k))return;r.push(q)}));return r}
 function jobUI(k,label){
  const w=document.createElement('div');w.innerHTML=`<label>${esc(label)}</label><div class="jbw"><b>MH</b></div>`;const box=w.lastChild,ins=[];
  [['जिल्हा',2],['तालुका',3],['ग्रा.प.',3],['गाव',3],['कुटुंब',4],['अधिक',3]].forEach(([l,n])=>{
@@ -215,7 +227,7 @@ function jobUI(k,label){
   for(let i=0;i<n;i++){const e=document.createElement('input');e.className='jb';e.maxLength=1;e.setAttribute('inputmode','text');r.appendChild(e);ins.push(e)}box.appendChild(g)});
  const upd=()=>{V[k]=ins.map(e=>e.value.trim()||' ').join('').replace(/\s+$/,'')};
  [...(V[k]||'')].forEach((c,i)=>{if(ins[i]&&c!==' ')ins[i].value=c});
- ins.forEach((e,i)=>{e.oninput=()=>{if(e.value.length>1){[...e.value].forEach((c,j)=>{if(ins[i+j])ins[i+j].value=c});e.value=e.value[0]}upd();if(e.value&&ins[i+1])ins[i+1].focus()};
+ ins.forEach((e,i)=>{e.oninput=()=>{e.value=e.value.replace(/[^0-9०-९]/g,'');if(e.value.length>1){[...e.value].forEach((c,j)=>{if(ins[i+j])ins[i+j].value=c});e.value=[...e.value][0]}upd();if(e.value&&ins[i+1])ins[i+1].focus()};
   e.onkeydown=ev=>{if(ev.key==='Backspace'&&!e.value&&ins[i-1]){ins[i-1].focus();ins[i-1].value='';upd()}};e.onfocus=()=>e.select()});
  return w;
 }
@@ -223,8 +235,10 @@ const REG=['district','taluka','gp','name','cat','job','aadhar','acc','ifsc','ba
 function mkField(g,k){
  const m=FM[k];if(m.t=='jb'){const j=jobUI(k,m.l);j.style.gridColumn='1/-1';g.appendChild(j);return}
  const w=document.createElement('div');
- w.innerHTML=`<label>${esc(m.l)}</label>`+(m.t=='s'?`<select data-k="${k}">${m.o.map(o=>`<option value="${esc(o)}">${esc(o||'— निवडा —')}</option>`).join('')}</select>`:`<input lang="mr" data-k="${k}" type="${m.t=='d'?'date':'text'}">`);
- const i=w.lastChild;i.value=V[k]||'';i.oninput=i.onchange=()=>{V[k]=i.value;i.classList.remove('bad');keep()};g.appendChild(w);
+ const nm=m.num,hint=nm&&nm.exact?` (${nm.exact} ${nm.mode==='i'?'अक्षरे/अंक':'अंक'})`:'';
+ w.innerHTML=`<label>${esc(m.l)}${hint}</label>`+(m.t=='s'?`<select data-k="${k}">${m.o.map(o=>`<option value="${esc(o)}">${esc(o||'— निवडा —')}</option>`).join('')}</select>`:`<input lang="mr" data-k="${k}" type="${m.t=='d'?'date':'text'}">`);
+ const i=w.lastChild;if(nm){i.setAttribute('inputmode',nm.mode==='i'?'text':'numeric');if(nm.max)i.maxLength=nm.max}
+ i.value=V[k]||'';i.oninput=i.onchange=()=>{if(nm){const c=cleanNum(nm.mode,nm.max,i.value);if(c!==i.value)i.value=c}V[k]=i.value;i.classList.remove('bad');keep()};g.appendChild(w);
 }
 function section(d,title,ks){if(!ks.length)return;d.insertAdjacentHTML('beforeend',`<h2>${title}</h2>`);const g=document.createElement('div');g.className='g';d.appendChild(g);ks.forEach(k=>mkField(g,k))}
 function form(){
@@ -234,51 +248,57 @@ function form(){
  section(d,'सर्व फॉर्मसाठी कायम माहिती',REG);
  section(d,'ग्रामरोजगार सहाय्यक (फॉर्मच्या शीर्षकात व सहीसाठी)',['gra','graMob']);
  FD.forEach(([sec,fs])=>section(d,sec,fs.map(f=>f[0]).filter(k=>NEED.has(k)&&!ALW.includes(k))));
- section(d,'या फॉर्मची इतर माहिती',[...NEED].filter(k=>FM[k]&&FM[k].custom));
+ section(d,'या फॉर्मची अतिरिक्त माहिती',(W.ex||[]).map(e=>e.k));
 }
 function marathiCheck(){
  const bad=[];document.querySelectorAll('#fields [data-k]').forEach(e=>{const k=e.dataset.k,m=FM[k];e.classList.remove('bad');
-  if(m.t==='t'&&!LATOK.has(k)&&/[A-Za-z]/.test(V[k]||'')){bad.push(m.l);e.classList.add('bad')}});return bad;
+  if(!m)return;const v=V[k]||'';
+  if(m.num){if(m.num.exact&&v&&[...v].length!==m.num.exact){bad.push(m.l+' ('+m.num.exact+' अंक/अक्षरे हवेत)');e.classList.add('bad')}return}
+  if(m.t==='t'&&!LATOK.has(k)&&/[A-Za-z]/.test(v)){bad.push(m.l+' (मराठीत भरा)');e.classList.add('bad')}});return bad;
 }
 /* ---- PDF तयार करणे ---- */
+const SC=1.7,BGC={},SGC={};
 async function build(){
  await document.fonts.load('700 16px '+FONT,'अआक');
  const fs=12,out=$('#out');out.innerHTML='';canv=[];let SKIP=0;
- for(const[id,n]of W.p){
-  const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:2}),c=document.createElement('canvas');
-  c.width=vp.width;c.height=vp.height;const ctx=c.getContext('2d');
-  await pg.render({canvasContext:ctx,viewport:vp}).promise;
-  const sigs=await sigSpots(pg);ctx.textBaseline='alphabetic';const plan=[],big=fs*2;
+ $('#p1').classList.add('hide');$('#res').classList.remove('hide');
+ const exSet=new Set((W.ex||[]).map(e=>e.k));(W.ex||[]).forEach(regCustom);
+ const gra=(V.gra||'').trim(),mob=(V.graMob||'').trim();
+ for(let pi=0;pi<W.p.length;pi++){
+  const[id,n]=W.p[pi],key=id+':'+n;$('#msg').textContent=`पान ${pi+1}/${W.p.length} तयार होत आहे…`;
+  await new Promise(r=>setTimeout(r,0));
+  const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:SC});
+  let bg=BGC[key];if(!bg){bg=document.createElement('canvas');bg.width=vp.width;bg.height=vp.height;await pg.render({canvasContext:bg.getContext('2d'),viewport:vp}).promise;BGC[key]=bg}
+  const c=document.createElement('canvas');c.width=bg.width;c.height=bg.height;const ctx=c.getContext('2d');ctx.drawImage(bg,0,0);
+  const sigs=SGC[key]||(SGC[key]=await sigSpots(pg)),big=fs*SC,plan=[];ctx.textBaseline='alphabetic';
   pl(id,n).forEach(q=>{
-   if(!q.k||(q.s&&!W.sam))return;
+   if(!q.k||(q.s&&!W.sam)||(q.k.startsWith('x_')&&!exSet.has(q.k)))return;
    if(q.bx){plan.push({q,box:1});return}
    const v=val(q.k);if(!v)return;
-   const lim=Math.max(q.w||0,q.mw||0)*2;let f=big;ctx.font=`700 ${f}px ${FONT}`;let tw=ctx.measureText(v).width;
-   if(lim>20&&tw>lim){const sc=lim/tw;if(sc<.45){SKIP++;return}f=big*Math.max(.8,sc);ctx.font=`700 ${f}px ${FONT}`}
-   plan.push({q,v,f,lim:(lim>20&&tw>lim)?lim:0})});
-  /* १) ज्या जागी माहिती येणार तिथल्या रेषा / ठिपके पुसणे (माहिती नसेल तिथे रेषा तशीच राहते) */
+   const lim=Math.max(q.w||0,q.mw||0)*SC;let f=big;ctx.font=`700 ${f}px ${FONT}`;const tw=ctx.measureText(v).width,over=lim>10*SC&&tw>lim;
+   if(over){const sc=lim/tw;if(sc<.45){SKIP++;return}f=big*Math.max(.8,sc);ctx.font=`700 ${f}px ${FONT}`}
+   plan.push({q,v,f,lim:over?lim:0})});
   ctx.fillStyle='#fff';
   plan.forEach(p=>{if(p.box)return;const[a1,b1]=vp.convertToViewportPoint(p.q.x-1.5,p.q.y+5),[a2,b2]=vp.convertToViewportPoint(p.q.x+p.q.w+1,p.q.y-4.5);ctx.fillRect(a1,b1,a2-a1,b2-b1)});
-  /* २) मजकूर छापणे */
   ctx.fillStyle='#000';
   plan.forEach(p=>{const q=p.q,[x,y]=vp.convertToViewportPoint(q.x,q.y);
-   if(p.box){const s=(V[q.k]||'').replace(/[^0-9A-Za-z]/g,''),bx=q.bx,nb=bx.length-1;ctx.font=`700 ${big}px ${FONT}`;ctx.textAlign='center';
-    [...s].forEach((ch,i)=>{let a,b;if(i<nb){a=bx[i];b=bx[i+1]}else{const w=bx[nb]-bx[nb-1];a=bx[nb]+(i-nb)*w;b=a+w}
+   if(p.box){const s=[...(V[q.k]||'').replace(/[^0-9०-९]/g,'')],bx=q.bx,nb=bx.length-1;ctx.font=`700 ${big}px ${FONT}`;ctx.textAlign='center';
+    s.forEach((ch,i)=>{let a,b;if(i<nb){a=bx[i];b=bx[i+1]}else{const w=bx[nb]-bx[nb-1];a=bx[nb]+(i-nb)*w;b=a+w}
      const x0=vp.convertToViewportPoint(a,0)[0],x1=vp.convertToViewportPoint(b,0)[0];ctx.fillText(ch,(x0+x1)/2,y)});ctx.textAlign='left';return}
    ctx.font=`700 ${p.f}px ${FONT}`;p.lim?ctx.fillText(p.v,x,y,p.lim):ctx.fillText(p.v,x,y)});
-  /* ग्रामरोजगार सहाय्यक: शीर्षक + सही/शिक्क्यासाठी नाव */
-  const gra=(V.gra||'').trim(),mob=(V.graMob||'').trim(),PW=pg.view[2],PT=pg.view[3];ctx.fillStyle='#000';
-  if(gra||mob){ctx.font=`700 ${9*2}px ${FONT}`;ctx.textAlign='center';const[hx,hy]=vp.convertToViewportPoint((pg.view[0]+PW)/2,PT-16);ctx.fillText('ग्रामरोजगार सहाय्यक: '+gra+(mob?'    मोबाईल: '+mob:''),hx,hy,vp.width*.9);ctx.textAlign='left'}
-  sigs.forEach(s=>{const LB='ग्रामरोजगार सहाय्यक';ctx.font=`700 ${11*2}px ${FONT}`;const lw=ctx.measureText(LB).width/2;let lx=s.x0-lw-22;if(lx<28){lx=s.x1+22;if(lx+lw>PW-22)return}
+  const PW=pg.view[2],PT=pg.view[3],PB=pg.view[1];ctx.fillStyle='#000';
+  if(gra||mob){ctx.font=`700 ${9*SC}px ${FONT}`;ctx.textAlign='center';const[hx,hy]=vp.convertToViewportPoint((pg.view[0]+PW)/2,PT-16);ctx.fillText('ग्रामरोजगार सहाय्यक: '+gra+(mob?'    मोबाईल: '+mob:''),hx,hy,vp.width*.9);ctx.textAlign='left'}
+  sigs.forEach(s=>{const LB='ग्रामरोजगार सहाय्यक';ctx.font=`700 ${11*SC}px ${FONT}`;const lw=ctx.measureText(LB).width/SC;let lx=s.x0-lw-22;if(lx<28){lx=s.x1+22;if(lx+lw>PW-22)return}
    const[sx,sy]=vp.convertToViewportPoint(lx,s.y);ctx.fillText(LB,sx,sy);
-   if(gra){ctx.font=`700 ${9*2}px ${FONT}`;const[nx,ny]=vp.convertToViewportPoint(lx,s.y-12);ctx.fillText('('+gra+')',nx,ny,lw*2+30)}});
+   if(gra){ctx.font=`700 ${9*SC}px ${FONT}`;const[nx,ny]=vp.convertToViewportPoint(lx,s.y-12);ctx.fillText('('+gra+')',nx,ny,lw*SC+30)}});
+  if(DEV){ctx.font=`700 ${6.5*SC}px ${FONT}`;ctx.fillStyle='#333';ctx.textAlign='right';const[dx,dy]=vp.convertToViewportPoint(PW-22,PB+9);ctx.fillText('विकसक: '+DEV,dx,dy);ctx.textAlign='left'}
   canv.push({c,w:pg.view[2]-pg.view[0],h:pg.view[3]-pg.view[1]});out.appendChild(c);
  }
- $('#p1').classList.add('hide');$('#res').classList.remove('hide');$('#msg').textContent='पूर्वावलोकन तपासा, नंतर प्रिंट किंवा डाउनलोड करा.'+(SKIP?` (${SKIP} ठिकाणी जागा खूप कमी असल्याने ती रेषा/ठिपके तसेच ठेवले आहेत.)`:'');
+ $('#msg').textContent='पूर्वावलोकन तपासा, नंतर प्रिंट किंवा डाउनलोड करा.'+(SKIP?` (${SKIP} ठिकाणी जागा खूप कमी असल्याने ती रेषा/ठिपके तसेच ठेवले आहेत.)`:'');
 }
 $('#gen').onclick=async()=>{
  if(!W)return;const bad=marathiCheck();
- if(bad.length){$('#ferr').textContent='कृपया खालील माहिती मराठीत (देवनागरीत) भरा: '+bad.join(', ');return}
+ if(bad.length){$('#ferr').textContent='कृपया दुरुस्त करा: '+bad.join(', ');return}
  $('#ferr').textContent='';$('#gen').disabled=true;$('#gen').textContent='तयार होत आहे…';
  try{await build()}catch(e){alert('त्रुटी: '+e.message)}$('#gen').disabled=false;$('#gen').textContent='PDF तयार करा';
 };
@@ -299,7 +319,7 @@ let taps=0,tt;$('#logo').onclick=()=>{taps++;clearTimeout(tt);tt=setTimeout(()=>
 $('#pinok').onclick=async()=>{if(await sha($('#pin').value)===PIN){$('#pin').value='';$('#gate').classList.add('hide');$('#p1').classList.add('hide');$('#adm').classList.remove('hide');atab(1);draftNote()}else $('#pinmsg').textContent='चुकीचा PIN'};
 $('#admx').onclick=()=>{$('#adm').classList.add('hide');$('#p1').classList.remove('hide');refreshUser()};
 function draftNote(){$('#draftnote').textContent=OV?'⚠️ तुमचे बदल फक्त या मोबाईलवर (ड्राफ्ट) आहेत. सर्वांपर्यंत पोहोचवण्यासाठी "प्रकाशित करा" टॅब वापरा.':''}
-function atab(n){[1,2,3,4].forEach(i=>{$('#a'+i).classList.toggle('hide',i!==n);$('#at'+i).classList.toggle('o',i!==n);$('#at'+i).classList.toggle('on',i===n)});$('#ped').classList.add('hide');if(n===2)renderManage();if(n===3)loadGh();if(n===4)renderExtra()}
+function atab(n){[1,2,3,4].forEach(i=>{$('#a'+i).classList.toggle('hide',i!==n);$('#at'+i).classList.toggle('o',i!==n);$('#at'+i).classList.toggle('on',i===n)});$('#ped').classList.add('hide');if(n===2)renderManage();if(n===3){loadGh();$('#devin').value=DEV}if(n===4)renderExtra()}
 [1,2,3,4].forEach(i=>$('#at'+i).onclick=()=>atab(i));
 /* प्रश्न */
 function qcheck(){
@@ -326,7 +346,7 @@ $('#detbtn').onclick=async()=>{
  for(const n of sel)CAT.pages[N.id+':'+n]=await detectAny(N.pdf,n);
  const t=$('#q2').value;CAT.works.push({id:'w'+Date.now(),n:$('#q1').value.trim(),c:t,w:$('#q1').value.trim(),sam:t==='सामूहिक'?1:0,p:sel.map(n=>[N.id,n])});
  const allp=sel.flatMap(n=>CAT.pages[N.id+':'+n]||[]).filter(q=>q.k),nm=[...new Set(allp.map(q=>q.fl||(FM[q.k]||{}).l||DL[q.k]||q.k))];
- ANOTE=allp.length?`✅ <b>${allp.length}</b> जागा सापडल्या. मोबाईल फॉर्ममध्ये हे रकाने तयार झाले: <b>${esc(nm.join(', '))}</b>.<br>नावे चुकीची असतील तर खाली काम उघडून पानाची "जागा" दाबा; तिथे नाव बदला, चुकीची काढा किंवा नवी जोडा. नंतर "प्रकाशित करा".`:'⚠️ या PDF मध्ये रिकाम्या जागा आपोआप सापडल्या नाहीत. खाली काम उघडून "जागा" दाबा आणि PDF वर क्लिक करून रकाने जोडा.';
+ ANOTE=allp.length?`✅ <b>${allp.length}</b> जागा ओळखल्या: <b>${esc(nm.join(', '))}</b>. ही माहिती सर्व फॉर्मसाठी कायम असलेल्या रकान्यांतून आपोआप भरली जाईल.<br>या फॉर्मला आणखी माहिती लागत असेल (उदा. कामाचा सांकेतांक) तर <b>अतिरिक्त माहिती</b> टॅबमध्ये रकाना जोडा. जागा चुकीची असेल तर खाली काम उघडून पानाची "जागा" दाबा. नंतर "प्रकाशित करा".`:'⚠️ या PDF मध्ये ओळखीच्या जागा आपोआप सापडल्या नाहीत. खाली काम उघडून "जागा" दाबा आणि पानावर क्लिक करून जागा ठरवा.';
  await saveOV();NEWPDF=null;$('#pgbox').classList.add('hide');$('#qf').value='';$('#detmsg').textContent='';
  ['q1','q2','q3','q4'].forEach(i=>$('#'+i).value='');qcheck();atab(2);const ds=document.querySelectorAll('#a2 details');const last=ds[ds.length-1];if(last){last.open=true;last.scrollIntoView()}
 };
@@ -352,7 +372,7 @@ async function detectLines(pdf,n){
  lines.filter(l=>l.t<=5).sort((a,b)=>a.y1-b.y1||a.s-b.s).forEach(l=>{
   if(vcol(l.s+1,l.y1)||vcol(l.e-1,l.y1)||vcol(l.s-2,l.y1)||vcol(l.e+2,l.y1))return;
   i++;const[x,y]=vp.convertToPdfPoint(l.s,l.y1),fl='माहिती '+dev(i);
-  out.push({k:'x_'+nz(fl),fl,x:+(x+1).toFixed(1),y:+(y+2.5).toFixed(1),w:+((l.e-l.s)/SC-2).toFixed(1),s:0,l:'रेषा'})});
+  out.push({k:'',x:+(x+1).toFixed(1),y:+(y+2.5).toFixed(1),w:+((l.e-l.s)/SC-2).toFixed(1),s:0,l:'रेषा'})});
  return out;
 }
 const detectAny=async(pdf,n)=>{let r=await detectPage(pdf,n);if(!r.length)r=await detectLines(pdf,n);return r};
@@ -398,7 +418,7 @@ async function detectPage(pdf,n){
    while((m=RE.exec(it.s))){if(m.index>last)seg.push({t:it.s.slice(last,m.index)});seg.push({b:1,x:it.x+it.w*m.index/len,w:it.w*m[0].length/len,y:it.y,h:it.h});last=m.index+m[0].length}
    if(last<len)seg.push({t:it.s.slice(last)})});
   seg.forEach((s,i)=>{if(!s.b||s.w<8)return;let pre='',post='';for(let j=i-1;j>=0&&!seg[j].b;j--)pre=seg[j].t+pre;for(let j=i+1;j<seg.length&&!seg[j].b;j++)post+=seg[j].t;
-   const k0=classify(pre,post),lb=lab(pre,post);res.push({k:k0||(lb?'x_'+nz(lb):''),fl:k0?undefined:(lb||undefined),x:+(s.x+1).toFixed(1),y:+(s.y+1.5).toFixed(1),w:+(s.w-2).toFixed(1),s:0,l:pre.trim().slice(-22),cx:pre.slice(-30)+' '+post.slice(0,20)})})
+   const k0=classify(pre,post);res.push({k:k0,x:+(s.x+1).toFixed(1),y:+(s.y+1.5).toFixed(1),w:+(s.w-2).toFixed(1),s:0,l:pre.trim().slice(-22),cx:pre.slice(-30)+' '+post.slice(0,20)})})
  });
  return res;
 }
@@ -428,7 +448,7 @@ async function fillWork(d,w){
    r.querySelector('.up').onclick=()=>{if(i>0){[w.p[i-1],w.p[i]]=[w.p[i],w.p[i-1]];reload()}};
    r.querySelector('.dn').onclick=()=>{if(i<w.p.length-1){[w.p[i+1],w.p[i]]=[w.p[i],w.p[i+1]];reload()}};
    r.querySelector('.rm').onclick=()=>{if(w.p.length<2){alert('किमान एक पान ठेवा.');return}w.p.splice(i,1);reload()};
-   r.querySelector('.ed').onclick=()=>pedit(id,n,reload);L.appendChild(r);
+   r.querySelector('.ed').onclick=()=>pedit(w,reload,i);L.appendChild(r);
    (async()=>{try{const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:.35}),c=r.querySelector('canvas');c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise}catch(e){}})();
   }};
  await fillWorkPages();
@@ -443,61 +463,66 @@ async function fillWork(d,w){
   wb.querySelector('.ap').innerHTML=Object.entries(CAT.pdfs).map(([k,v])=>`<option value="${k}">${esc(v.n)}</option>`).join('');reload()};
 }
 /* अतिरिक्त माहिती (प्रत्येक फॉर्मसाठी वेगळे रकाने) */
-const extraOf=w=>{const m=new Map();w.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.k&&q.k.startsWith('x_')){const r=m.get(q.k)||{k:q.k,fl:q.fl||q.k.slice(2),n:0,id,pn:n};r.n++;m.set(q.k,r)}}));return[...m.values()]};
+const exInfo=(w,k)=>{let c=0,first=0,f=true;w.p.forEach(([id,n],i)=>pl(id,n).forEach(q=>{if(q.k===k){c++;if(f){first=i;f=false}}}));return{c,first}};
+const moveKey=(w,a,b)=>w.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.k===a)q.k=b}));
 function renderExtra(){
  const sel=$('#x_work'),cur=sel.value;sel.innerHTML=CAT.works.map((w,i)=>`<option value="${i}">${esc(w.n)} (${w.c})</option>`).join('');if(cur!==''&&CAT.works[+cur])sel.value=cur;
- const w=CAT.works[+sel.value];const L=$('#x_list');L.innerHTML='';if(!w)return;
- const ex=extraOf(w);L.insertAdjacentHTML('beforeend',`<h2>सध्याचे अतिरिक्त रकाने (${ex.length})</h2>`+(ex.length?'':'<p class="mu">या कामाला अजून अतिरिक्त रकाना नाही.</p>'));
- ex.forEach(e=>{const r=document.createElement('div');r.className='row';r.innerHTML=`<input class="xl" lang="mr" value="${esc(e.fl)}" style="flex:2"><span class="mu" style="white-space:nowrap">${e.n} जागा</span><button class="o s xg">जागा</button><button class="d s xd">✕</button>`;
-  r.querySelector('.xl').onchange=async ev=>{const nl=ev.target.value.trim();if(!nl||/[A-Za-z]/.test(nl)){alert('नाव मराठीत लिहा.');ev.target.value=e.fl;return}
-   w.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.k===e.k){q.fl=nl;q.k='x_'+nz(nl)}}));await saveOV();renderExtra()};
-  r.querySelector('.xd').onclick=async()=>{if(!confirm('हा रकाना काढायचा? PDF मधील ती जागा रिकामी राहील.'))return;w.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.k===e.k){q.k='';delete q.fl}}));await saveOV();renderExtra()};
-  r.querySelector('.xg').onclick=()=>pedit(e.id,e.pn,renderExtra);L.appendChild(r)});
+ const w=CAT.works[+sel.value],L=$('#x_list');L.innerHTML='';if(!w)return;w.ex=w.ex||[];
+ L.insertAdjacentHTML('beforeend',`<h2>या कामाचे अतिरिक्त रकाने (${w.ex.length})</h2>`+(w.ex.length?'':'<p class="mu">अजून एकही अतिरिक्त रकाना जोडलेला नाही.</p>'));
+ w.ex.forEach(e=>{const inf=exInfo(w,e.k),r=document.createElement('div');r.className='row';
+  r.innerHTML=`<input class="xl" lang="mr" value="${esc(e.l)}" style="flex:2"><span class="mu" style="white-space:nowrap">${inf.c?inf.c+' जागा':'जागा ठरलेली नाही'}</span><button class="o s xg">जागा</button><button class="d s xd">✕</button>`;
+  r.querySelector('.xl').onchange=async ev=>{const nl=ev.target.value.trim();if(!/[\u0900-\u097F]/.test(nl)||/[A-Za-z]/.test(nl)){alert('नाव मराठीत लिहा.');ev.target.value=e.l;return}
+   const nk='x_'+nz(nl);if(nk!==e.k&&w.ex.some(x=>x.k===nk)){alert('हे नाव आधीच आहे.');ev.target.value=e.l;return}
+   moveKey(w,e.k,nk);e.k=nk;e.l=nl;await saveOV();renderExtra()};
+  r.querySelector('.xd').onclick=async()=>{if(!confirm('हा रकाना काढायचा? PDF मधील ती जागा रिकामी राहील.'))return;moveKey(w,e.k,'');w.ex=w.ex.filter(x=>x!==e);await saveOV();renderExtra()};
+  r.querySelector('.xg').onclick=async()=>{await pedit(w,renderExtra,inf.first);$('#newkey').value=e.k};L.appendChild(r)});
 }
 $('#x_work').onchange=renderExtra;
-let NEWFT='';
 $('#x_add').onclick=async()=>{
  const w=CAT.works[+$('#x_work').value],lbl=$('#x_label').value.trim(),m=$('#x_msg');
  if(!w){m.textContent='आधी काम निवडा.';return}
  if(!/[\u0900-\u097F]/.test(lbl)||/[A-Za-z]/.test(lbl)){m.textContent='रकान्याचे नाव मराठीत (देवनागरीत) लिहा.';return}
- const k='x_'+nz(lbl),ft=$('#x_type').value;if(extraOf(w).some(e=>e.k===k)){m.textContent='हा रकाना आधीच आहे.';return}
- m.textContent='PDF मध्ये जागा शोधत आहे…';
- const full=nz(lbl),words=lbl.replace(/[:：\-–_.()]/g,' ').split(/\s+/).map(nz).filter(x=>x.length>=3);let found=0;
- for(const[id,n]of w.p){
-  const bl=await detectPage(await doc(id),n),arr=CAT.pages[id+':'+n]=CAT.pages[id+':'+n]||[];
-  for(const pass of[0,1]){if(found)break;
+ const k='x_'+nz(lbl),ty=$('#x_type').value;w.ex=w.ex||[];if(w.ex.some(e=>e.k===k)){m.textContent='हा रकाना आधीच आहे.';return}
+ w.ex.push({k,l:lbl,t:ty});m.textContent='PDF मध्ये जागा शोधत आहे…';
+ const full=nz(lbl),words=lbl.replace(/[:：\-–_.()]/g,' ').split(/\s+/).map(nz).filter(x=>x.length>=3),dets=[];let found=0;
+ try{for(const[id,n]of w.p)dets.push({id,n,bl:await detectPage(await doc(id),n)})}catch(e){m.textContent='PDF वाचता आली नाही: '+e.message}
+ for(const pass of[0,1]){if(found)break;
+  dets.forEach(({id,n,bl})=>{const arr=CAT.pages[id+':'+n]=CAT.pages[id+':'+n]||[];
    bl.forEach(b=>{const c=nz(b.cx||'');if(!(pass===0?c.includes(full):words.some(x=>c.includes(x))))return;
     const ex=arr.findIndex(q=>Math.abs(q.x-b.x)<3&&Math.abs(q.y-b.y)<3);if(ex>=0){if(arr[ex].k&&!arr[ex].k.startsWith('x_'))return;arr.splice(ex,1)}
-    arr.push({k,fl:lbl,ft:ft==='d'?'d':undefined,x:b.x,y:b.y,w:b.w,mw:b.mw,s:0,l:b.l});found++})}
- }
- if(found){await saveOV();$('#x_label').value='';m.textContent=`✅ "${lbl}" हा रकाना जोडला. PDF मध्ये ${found} जागा सापडली. आता तो फॉर्ममध्ये दिसेल. जागा चुकीची असेल तर वरच्या यादीत "जागा" दाबा. नंतर "प्रकाशित करा".`;renderExtra();return}
- NEWFT=ft;const[id,n]=w.p[0];m.textContent='जागा आपोआप सापडली नाही. खाली उघडलेल्या पानावर, ती माहिती जिथे भरायची तिथे क्लिक करा.';
- $('#newkey').value='__x';$('#newlabel').value=lbl;await pedit(id,n,renderExtra);$('#newkey').value='__x';$('#newlabel').value=lbl;
+    arr.push({k,x:b.x,y:b.y,w:b.w,s:0,l:b.l});found++})})}
+ await saveOV();$('#x_label').value='';renderExtra();
+ if(found){m.textContent=`✅ "${lbl}" हा रकाना जोडला. PDF मध्ये ${found} जागा सापडली. आता तो ॲपच्या फॉर्ममध्ये दिसेल. जागा चुकीची असेल तर वरच्या यादीत "जागा" दाबा. नंतर "प्रकाशित करा".`;return}
+ m.textContent=`✅ "${lbl}" हा रकाना जोडला (ॲपमध्ये दिसेल). जागा आपोआप सापडली नाही; खाली सर्व पाने उघडली आहेत – जिथे ती माहिती भरायची तिथे क्लिक करा, मग "जतन करा".`;
+ await pedit(w,renderExtra,0);$('#newkey').value=k;
 };
-/* जागा संपादक */
+/* जागा संपादक – कामाची सर्व पाने */
 let PE=null;
-$('#newkey').innerHTML=KEYOPT.replace('— तसेच राहू द्या —','— माहिती निवडा —');
-async function pedit(id,n,done){
- PE={id,n,done};$('#ped').classList.remove('hide');$('#pedt').textContent=`${(CAT.pdfs[id]||{}).n||id} – पान ${n}`;
- const arr=CAT.pages[id+':'+n]=CAT.pages[id+':'+n]||[];const L=$('#plist');L.innerHTML='';
- arr.forEach((q,i)=>{const r=document.createElement('div');r.className='row';
-  r.innerHTML=`<span style="flex:1;font-size:.85rem" class="mu">${esc(q.l||(q.bx?'जॉबकार्ड चौकोन':'✋ हाताने'))}</span><select style="flex:1.4">${KEYOPT}</select><input class="fl" lang="mr" placeholder="प्रश्नाचे नाव (मराठीत)" style="flex:1.3" value="${esc(q.fl||'')}"><label style="margin:0;white-space:nowrap"><input type="checkbox" style="width:auto"${q.s?' checked':''}> सामूहिक</label><button class="d s">✕</button>`;
-  const sel=r.querySelector('select'),fl=r.querySelector('.fl'),cb=r.querySelector('input[type=checkbox]'),cust=!!(q.k&&q.k.startsWith('x_'));
-  const sync=()=>{fl.style.display=sel.value==='__x'?'':'none'};sel.value=cust?'__x':(q.k||'');sync();
-  sel.onchange=()=>{if(sel.value==='__x'){q.fl=q.fl||'माहिती';q.k='x_'+nz(q.fl);fl.value=q.fl}else{q.k=sel.value;delete q.fl}sync();paint()};
-  fl.oninput=()=>{q.fl=fl.value.trim();q.k='x_'+nz(q.fl||'माहिती');paint()};
-  cb.onchange=e=>q.s=e.target.checked?1:0;
-  r.querySelector('button').onclick=()=>{arr.splice(i,1);pedit(id,n,done)};L.appendChild(r)});
- const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:1.3}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+async function pedit(w,done,start){
+ PE={done};$('#ped').classList.remove('hide');$('#pedt').textContent=w.n;
+ const ex=w.ex||[],optsFor=KEYOPT+ex.map(e=>`<option value="${e.k}">★ ${esc(e.l)}</option>`).join('');
+ $('#newkey').innerHTML=optsFor.replace('— तसेच राहू द्या —','— माहिती निवडा —');
+ $('#plist').innerHTML='';const box=$('#pcan');box.innerHTML='';
+ w.p.forEach(([id,n],pi)=>{const s=document.createElement('div');s.id='pg_'+pi;s.innerHTML=`<h2>पान ${pi+1} – ${esc((CAT.pdfs[id]||{}).n||id)} (${n})</h2><div class="rows"></div><div class="pw"><canvas></canvas></div>`;box.appendChild(s)});
+ $('#ped').scrollIntoView();
+ for(let pi=0;pi<w.p.length;pi++){await paintPage(document.getElementById('pg_'+pi),w,w.p[pi][0],w.p[pi][1],optsFor);if(pi===(start||0)&&start)document.getElementById('pg_'+pi).scrollIntoView()}
+}
+async function paintPage(sec,w,id,n,opts){
+ const arr=CAT.pages[id+':'+n]=CAT.pages[id+':'+n]||[],rows=sec.querySelector('.rows'),c=sec.querySelector('canvas'),exk=new Set((w.ex||[]).map(e=>e.k));
+ const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:1.2});c.width=vp.width;c.height=vp.height;
  const ctx=c.getContext('2d');await pg.render({canvasContext:ctx,viewport:vp}).promise;const img=ctx.getImageData(0,0,c.width,c.height);
- function paint(){ctx.putImageData(img,0,0);arr.forEach(q=>{const[x,y]=vp.convertToViewportPoint(q.x,q.y),ok=!!q.k;ctx.fillStyle=ok?'rgba(30,140,60,.25)':'rgba(220,50,50,.2)';ctx.strokeStyle=ok?'#1e8c3c':'#d33';
-  const w=(q.bx?(q.bx[q.bx.length-1]-q.x):q.w||60)*1.3;ctx.fillRect(x,y-13,w,16);ctx.strokeRect(x,y-13,w,16);if(ok){ctx.fillStyle='#064';ctx.font='10px '+FONT;ctx.fillText(q.fl||(FM[q.k]||{}).l||DL[q.k]||q.k,x,y-15)}})}
- paint();
- c.onclick=ev=>{let k=$('#newkey').value,fl;if(!k){alert('आधी वरच्या यादीतून माहिती निवडा.');return}
-  if(k==='__x'){fl=$('#newlabel').value.trim();if(!fl){alert('स्वतंत्र प्रश्नाचे नाव लिहा.');return}k='x_'+nz(fl)}
+ const live=q=>q.k&&(!q.k.startsWith('x_')||exk.has(q.k)),lab=q=>((w.ex||[]).find(e=>e.k===q.k)||{}).l||(FM[q.k]||{}).l||DL[q.k]||q.k;
+ function paint(){ctx.putImageData(img,0,0);arr.forEach(q=>{const[x,y]=vp.convertToViewportPoint(q.x,q.y),ok=live(q);ctx.fillStyle=ok?'rgba(30,140,60,.25)':'rgba(220,50,50,.2)';ctx.strokeStyle=ok?'#1e8c3c':'#d33';
+  const ww=(q.bx?(q.bx[q.bx.length-1]-q.x):q.w||60)*1.2;ctx.fillRect(x,y-13,ww,16);ctx.strokeRect(x,y-13,ww,16);if(ok){ctx.fillStyle='#064';ctx.font='10px '+FONT;ctx.fillText(lab(q),x,y-15)}})}
+ function list(){rows.innerHTML='';arr.forEach((q,i)=>{const r=document.createElement('div');r.className='row';
+  r.innerHTML=`<span style="flex:1;font-size:.85rem" class="mu">${esc(q.l||(q.bx?'जॉबकार्ड चौकोन':'✋ हाताने'))}</span><select style="flex:1.4">${opts}</select><label style="margin:0;white-space:nowrap"><input type="checkbox" style="width:auto"${q.s?' checked':''}> सामूहिक</label><button class="d s">✕</button>`;
+  const sel=r.querySelector('select');sel.value=live(q)?q.k:'';sel.onchange=()=>{q.k=sel.value;paint()};
+  r.querySelector('input').onchange=e=>q.s=e.target.checked?1:0;
+  r.querySelector('button').onclick=()=>{arr.splice(i,1);list();paint()};rows.appendChild(r)})}
+ list();paint();
+ c.onclick=ev=>{const k=$('#newkey').value;if(!k){alert('आधी वरच्या यादीतून माहिती निवडा.');return}
   const r=c.getBoundingClientRect(),[X,Y]=vp.convertToPdfPoint((ev.clientX-r.left)*c.width/r.width,(ev.clientY-r.top)*c.height/r.height);
-  arr.push(fl?{k,fl,ft:NEWFT==='d'?'d':undefined,x:+X.toFixed(1),y:+Y.toFixed(1),w:150,s:0}:{k,x:+X.toFixed(1),y:+Y.toFixed(1),w:150,s:0});pedit(id,n,done)};
- const w=document.createElement('div');w.className='pw';w.appendChild(c);$('#pcan').innerHTML='';$('#pcan').appendChild(w);
+  arr.push({k,x:+X.toFixed(1),y:+Y.toFixed(1),w:150,s:0});list();paint()};
 }
 $('#psave').onclick=async()=>{await saveOV();$('#ped').classList.add('hide');if(PE&&PE.done)PE.done()};
 $('#pclose').onclick=()=>$('#ped').classList.add('hide');
@@ -531,11 +556,21 @@ async function ghCheck(g){
  return '';
 }
 async function ghPut(g,path,b64,msg){
- const base=`https://api.github.com/repos/${g.o}/${g.r}/contents/${path.split('/').map(encodeURIComponent).join('/')}`,H=GH(g);
- let sha;const r0=await ghFetch(base+'?ref='+encodeURIComponent(g.b),{headers:H});if(r0.ok)sha=(await r0.json()).sha;else if(r0.status!==404)throw new Error(ghErr(r0.status,g,path));
- const r=await ghFetch(base,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({message:msg,content:b64,branch:g.b,sha})});
- if(!r.ok)throw new Error(ghErr(r.status,g,path));
+ const base=`https://api.github.com/repos/${g.o}/${g.r}/contents/${path.split('/').map(encodeURIComponent).join('/')}`,H=GH(g);let last='';
+ for(let a=1;a<=4;a++){
+  try{
+   let sha;const r0=await ghFetch(base+'?ref='+encodeURIComponent(g.b)+'&t='+Date.now(),{headers:{...H,Accept:'application/vnd.github.object+json'},cache:'no-store'});
+   if(r0.ok)sha=(await r0.json()).sha;else if(r0.status!==404)throw{st:r0.status,t:await r0.text()};
+   const r=await ghFetch(base,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({message:msg,content:b64,branch:g.b,sha})});
+   if(r.ok)return;throw{st:r.status,t:await r.text()};
+  }catch(e){
+   const st=e.st;if(st===401||st===404||(st===403&&!/rate|abuse|secondary/i.test(e.t||'')))throw new Error(ghErr(st,g,path));
+   last=e.message||('त्रुटी '+st+' '+String(e.t||'').slice(0,80));if(a<4)await new Promise(r=>setTimeout(r,1800*a));
+  }
+ }
+ throw new Error(path+' → ४ वेळा प्रयत्न करूनही अयशस्वी: '+last+'. थोड्या वेळाने पुन्हा "प्रकाशित करा" दाबा (आधी झालेले काम पुन्हा होत नाही).');
 }
+const writeCfg=(g,msg)=>ghPut(g,g.d+'data/config.json',u2b64(new TextEncoder().encode(JSON.stringify({pinHash:PIN,developer:DEV}))),msg);
 $('#ghtest').onclick=async()=>{const m=$('#pubmsg');try{const g=ghCfg();m.textContent='तपासत आहे…';const e=await ghCheck(g);m.textContent=e?'❌ '+e:'✅ जोडणी बरोबर आहे. आता "प्रकाशित करा" दाबा.'}catch(e){m.textContent='❌ '+e.message}};
 $('#pub').onclick=async()=>{
  const m=$('#pubmsg');
@@ -549,14 +584,18 @@ $('#pub').onclick=async()=>{
 };
 $('#pinchg').onclick=async()=>{
  const p=$('#newpin').value.trim(),m=$('#pinres');if(p.length<4){m.textContent='किमान ४ अंक.';return}
- try{const g=ghCfg();m.textContent='GitHub तपासत आहे…';const e0=await ghCheck(g);if(e0){m.textContent='❌ '+e0;return}
-  const h=await sha(p);await ghPut(g,g.d+'data/config.json',u2b64(new TextEncoder().encode(JSON.stringify({pinHash:h}))),'PIN बदलला');PIN=h;$('#newpin').value='';m.textContent='✅ PIN बदलला. १-२ मिनिटांत सर्वत्र लागू.'}catch(e){m.textContent='❌ '+e.message}
+ const old=PIN;try{const g=ghCfg();m.textContent='GitHub तपासत आहे…';const e0=await ghCheck(g);if(e0){m.textContent='❌ '+e0;return}
+  PIN=await sha(p);await writeCfg(g,'PIN बदलला');$('#newpin').value='';m.textContent='✅ PIN बदलला. १-२ मिनिटांत सर्वत्र लागू.'}catch(e){PIN=old;m.textContent='❌ '+e.message}
+};
+$('#devsave').onclick=async()=>{
+ const m=$('#devres'),nv=$('#devin').value.trim(),old=DEV;try{const g=ghCfg();m.textContent='GitHub तपासत आहे…';const e0=await ghCheck(g);if(e0){m.textContent='❌ '+e0;return}
+  DEV=nv;setDev();await writeCfg(g,'विकसक नाव');m.textContent='✅ जतन झाले. १-२ मिनिटांत सर्वत्र दिसेल.'}catch(e){DEV=old;setDev();m.textContent='❌ '+e.message}
 };
 $('#exp').onclick=async()=>{await saveBytes(new TextEncoder().encode(JSON.stringify(CAT)),'works.json')};
 $('#drop').onclick=async()=>{if(!confirm('तुमचे ड्राफ्ट बदल रद्द करायचे?'))return;await kv('readwrite',s=>s.delete('overlay'));location.reload()};
 /* सुरुवात */
 (async()=>{
- try{await loadCat();refreshUser()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p class="err" style="padding:16px">डेटा लोड झाला नाही. इंटरनेट तपासा व पुन्हा उघडा.</p>')}
+ setDev();try{await loadCat();refreshUser()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p class="err" style="padding:16px">डेटा लोड झाला नाही. इंटरनेट तपासा व पुन्हा उघडा.</p>')}
  if(!EMBED&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
