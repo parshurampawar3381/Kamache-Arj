@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>कामांचे अर्ज भरा</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--tx:#1d2a20;--mu:#5d6b61;--ac:#1f7a3d;--bd:#d8ddd6;--er:#b3261e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14191a;--card:#1d2425;--tx:#e8eee9;--mu:#9aa8a0;--ac:#4cc27a;--bd:#33403c;--er:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14191a;--card:#1d2425;--tx:#e8eee9;--mu:#9aa8a0;--ac:#4cc27a;--bd:#33403c;--er:#ff8a80;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 "Noto Sans Devanagari",system-ui,sans-serif}
+main{max-width:780px;margin:0 auto;padding:16px}
+h1{font-size:1.2rem;margin:.2rem 0}h2{font-size:1.02rem;margin:16px 0 4px;color:var(--ac)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+button{font:inherit;border:1px solid var(--ac);background:var(--ac);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;margin:2px 0}
+button.o{background:transparent;color:var(--ac)}button.d{background:transparent;color:var(--er);border-color:var(--er)}button.s{padding:3px 9px}
+label{display:block;font-size:.85rem;color:var(--mu);margin:9px 0 2px}
+input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+input.bad,select.bad{border-color:var(--er);background:rgba(179,38,30,.08)}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}@media(max-width:560px){.g{grid-template-columns:1fr}}
+.mu{color:var(--mu);font-size:.85rem}.err{color:var(--er);font-size:.9rem}.hide{display:none}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.tabs button{flex:1 1 40%}.tabs button{flex:1}.tabs button:not(.on){background:transparent;color:var(--ac)}
+.row{display:flex;gap:6px;align-items:center;margin:4px 0}.row>*{min-width:0}
+.jbw{display:flex;flex-wrap:wrap;gap:3px;align-items:flex-end}.jgp{display:flex;gap:2px;margin-right:6px}.jgp small{display:block;font-size:.65rem;color:var(--mu);text-align:center}
+.jb{width:2.1rem;padding:8px 0;text-align:center;font-size:1.05rem}
+.pw{overflow-x:auto;border:1px solid var(--bd);margin:8px 0}.pw canvas{display:block;cursor:crosshair}
+.th{display:flex;gap:8px;align-items:center;border-top:1px solid var(--bd);padding:6px 0}.th canvas{border:1px solid var(--bd);width:70px;height:auto}
+#out canvas{max-width:100%;height:auto;display:block;border:1px solid var(--bd);margin:8px 0;background:#fff}
+summary{cursor:pointer}
+@media print{.noprint{display:none!important}body{background:#fff}main{padding:0;max-width:none}#out canvas{width:100%;border:0;margin:0;page-break-after:always}}
+</style>
+</head>
+<body><main>
+<div class="noprint" id="p1">
+ <div class="top"><div style="display:flex;align-items:center;gap:10px"><img id="logo" src="data:image/png;base64,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" alt="" style="width:44px;height:44px;border-radius:50%"><h1>कामांचे अर्ज भरा</h1></div></div>
+ <div class="card hide" id="gate"><label>Admin PIN</label><input type="password" id="pin" inputmode="numeric"><button id="pinok">उघडा</button> <span class="err" id="pinmsg"></span></div>
+ <div class="card">
+  <label>कामाचा प्रकार</label><select id="ctype"></select>
+  <label>कामाचे नाव</label><select id="work"></select>
+  <p class="mu" id="info"></p>
+ </div>
+ <div class="card hide" id="fcard">
+  <div id="fields"></div>
+  <p class="err" id="ferr"></p>
+  <button id="gen">PDF तयार करा</button>
+ </div>
+</div>
+
+<section id="res" class="hide">
+ <div class="noprint card">
+  <h2 style="margin-top:0">तुमचा फॉर्म तयार आहे</h2>
+  <button id="print">🖨️ प्रिंट</button> <button id="dl" class="o">⬇️ PDF डाउनलोड</button> <button id="back" class="o">← सुधारा</button>
+  <p class="mu" id="msg"></p>
+ </div>
+ <div id="out"></div>
+</section>
+
+<section id="adm" class="hide noprint">
+ <div class="top"><h1>⚙️ Admin</h1><button class="o s" id="admx">← बाहेर पडा</button></div>
+ <p class="mu" id="draftnote"></p>
+ <div class="tabs"><button id="at1" class="on">नवीन फॉर्म</button><button id="at2" class="o">कामे / पाने</button><button id="at3" class="o">प्रकाशित करा</button><button id="at4" class="o">अतिरिक्त माहिती</button></div>
+ <div id="a1">
+  <div class="card">
+   <h2 style="margin-top:0">आवश्यक प्रश्न – सर्व उत्तरांनंतरच PDF स्वीकारली जाईल</h2>
+   <label>१. कामाचे नाव (मराठीत)</label><input id="q1" lang="mr" placeholder="उदा. सार्वजनिक विहीर">
+   <label>२. कामाचा प्रकार</label>
+   <select id="q2"><option value="">— निवडा —</option><option>वैयक्तिक</option><option>सामूहिक</option><option>सार्वजनिक</option></select>
+   <p class="mu">वैयक्तिक = एका लाभार्थीचे काम (विहीर, शौचालय, शेततळे). सामूहिक = दोन/अधिक लाभार्थी मिळून. सार्वजनिक = गावाचे/संस्थेचे काम (रस्ता, शाळा, अंगणवाडी, वृक्ष लागवड).</p>
+   <label>३. हा फॉर्म मराठी भाषेत आहे का? (मराठीतच अनिवार्य)</label>
+   <select id="q3"><option value="">— निवडा —</option><option>होय</option><option>नाही</option></select>
+   <label>४. PDF मधील मजकूर निवडता / कॉपी करता येतो का? (स्कॅन फोटो असल्यास "नाही")</label>
+   <select id="q4"><option value="">— निवडा —</option><option>होय</option><option>नाही</option><option>माहीत नाही</option></select>
+   <p class="err" id="qmsg"></p>
+   <label>५. नमुना PDF निवडा</label><input type="file" id="qf" accept="application/pdf" disabled>
+  </div>
+  <div class="card hide" id="pgbox">
+   <h2 style="margin-top:0">कोणती पाने छापायची?</h2><div id="pgsel"></div>
+   <button id="detbtn">पुढे – जागा ओळखा व काम जोडा</button> <span class="mu" id="detmsg"></span>
+  </div>
+ </div>
+ <div id="a2" class="hide"></div>
+ <div id="a3" class="hide">
+  <div class="card">
+   <h2 style="margin-top:0">GitHub वर प्रकाशित करा</h2>
+   <p class="mu">प्रकाशित केल्यावर सर्व वापरकर्त्यांच्या मोबाईलवर बदल आपोआप पोहोचतात (ॲप पुन्हा इंस्टॉल करावे लागत नाही).</p>
+   <div class="g"><div><label>GitHub username (ईमेल नाही)</label><input id="gh_o" placeholder="उदा. parshurampawar3381" autocapitalize="off"></div><div><label>Repository नाव (जसे GitHub वर आहे, space नको)</label><input id="gh_r" placeholder="उदा. Kamache-Arj" autocapitalize="off"></div>
+   <div><label>Branch</label><input id="gh_b" value="main"></div><div><label>ॲप फोल्डर</label><input id="gh_d" value="docs/"></div></div>
+   <label>Personal Access Token (फक्त या repo ला Contents: Read &amp; write)</label><input type="password" id="gh_t">
+   <p><button class="o" id="ghtest">🔍 जोडणी तपासा</button> <button id="pub">🚀 प्रकाशित करा</button> <button class="o" id="exp">पॅक डाउनलोड</button> <button class="d" id="drop">ड्राफ्ट रद्द करा</button></p>
+   <p class="mu" id="pubmsg"></p>
+  </div>
+  <div class="card">
+   <h2 style="margin-top:0">विकसकाचे नाव</h2>
+   <p class="mu">हे नाव ॲपच्या सर्वात खाली आणि फॉर्मच्या प्रत्येक पानाच्या उजव्या खालच्या कोपऱ्यात लहान अक्षरात येते.</p>
+   <input id="devin" lang="mr"><p><button id="devsave">नाव जतन करा (प्रकाशित)</button> <span class="mu" id="devres"></span></p>
+  </div>
+  <div class="card">
+   <h2 style="margin-top:0">Admin PIN बदला</h2>
+   <p class="mu">वरील GitHub माहिती (विशेषतः token) भरलेली असावी. नवीन PIN सर्व वापरकर्त्यांसाठी Admin उघडण्यास लागू होईल.</p>
+   <label>नवीन PIN (किमान ४ अंक)</label><input id="newpin" type="password" inputmode="numeric">
+   <p><button id="pinchg">PIN बदला</button> <span class="mu" id="pinres"></span></p>
+  </div>
+ </div>
+ <div id="a4" class="hide">
+  <div class="card">
+   <h2 style="margin-top:0">अतिरिक्त माहितीचे रकाने (काम निवडून)</h2>
+   <p class="mu">जिल्हा, तालुका, ग्रामपंचायत, लाभार्थी नाव, प्रवर्ग, जॉबकार्ड, आधार, बँक खाते, IFSC, बँकेचे नाव, ठराव क्र./दिनांक आणि गट/खाते/मिळकत नं. हे रकाने सर्व फॉर्मसाठी कायम असतात. एखाद्या फॉर्मला आणखी माहिती लागत असेल (उदा. कामाचा सांकेतांक) तर येथे रकाना जोडा. हवे तेवढे रकाने जोडता येतात.</p>
+   <label>काम निवडा</label><select id="x_work"></select>
+   <div id="x_list"></div>
+   <h2>➕ नवीन रकाना जोडा</h2>
+   <label>रकान्याचे नाव (मराठीत) – PDF मधील मजकुराप्रमाणे लिहा, म्हणजे जागा आपोआप सापडेल</label><input id="x_label" lang="mr" placeholder="उदा. कामाचा सांकेतांक">
+   <label>प्रकार</label><select id="x_type"><option value="t">मजकूर / क्रमांक</option><option value="n">अंक (कोणत्याही भाषेत)</option><option value="d">तारीख</option></select>
+   <p><button id="x_add">जोडा व जागा शोधा</button></p><p class="mu" id="x_msg"></p>
+  </div>
+ </div>
+ <div id="ped" class="card hide">
+  <h2 style="margin-top:0">जागा तपासा – <span id="pedt"></span></h2>
+  <p class="mu">प्रत्येक रिकाम्या जागेसमोर कोणती माहिती छापायची ते निवडा. "तसेच राहू द्या" निवडलेली जागा रिकामीच राहील. नवीन जागेसाठी खालून माहिती निवडून PDF वर क्लिक करा.</p>
+  <div id="plist"></div>
+  <label>नवीन जागा – माहिती निवडा, मग खालील कोणत्याही पानावर क्लिक करा</label><select id="newkey"></select>
+  <div id="pcan"></div>
+  <button id="psave">जतन करा</button> <button class="o" id="pclose">बंद</button>
+ </div>
+</section>
+<div id="devf" class="mu noprint" style="text-align:center;padding:18px 0 8px">विकसक: <b id="devn"></b></div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>const EMBED=null;const PINHASH='03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';</script>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const FONT='"Noto Sans Devanagari",sans-serif',now=new Date(),TYPES=['वैयक्तिक','सामूहिक','सार्वजनिक'];
+let DEV='परशुराम पवार';
+function setDev(){const e=$('#devn');if(e)e.textContent=DEV;const f=$('#devf');if(f)f.style.display=DEV?'':'none'}
+const FY=(y=>y+'-'+String(y+1).slice(2))(now.getMonth()>=3?now.getFullYear():now.getFullYear()-1);
+const TODAY=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+const CAT12=['','अनुसूचित जाती','अनुसूचित जमाती','भटक्या जमाती (NT)','भटक्या विमुक्त जमाती (DT)','दारिद्र्य रेषेखालील इतर कुटुंब','महिलाप्रधान कुटुंब','शारीरिक अपंगत्व प्रधान कुटुंब','भूसुधार योजनेचे लाभार्थी','इंदिरा आवास योजनेचे लाभार्थी','अनुसूचित जमातीचे व अन्य परंपरागत वन निवासी','सीमांत शेतकरी (२.५ एकर)','अल्पभूधारक (५ एकर)'];
+const YN=['','होय','नाही'];
+/* [की, नाव, प्रकार(t/s/d/jb), पर्याय, आधीचे मूल्य, लक्षात ठेवा] */
+const FD=[
+['ठिकाण',[['gp','ग्रामपंचायत',,,,1],['taluka','तालुका / पंचायत समिती',,,'सातारा',1],['district','जिल्हा',,,'सातारा',1],['village','गाव (महसूल गाव)']]],
+['लाभार्थी',[['name','लाभार्थी / अर्जदाराचे पूर्ण नाव'],['name2','लाभार्थी क्र. २ चे पूर्ण नाव'],['cat','प्रवर्ग','s',CAT12],['aadhar','आधार कार्ड क्रमांक'],['age','वय'],['age2','वय – लाभार्थी २'],['occ','धंदा',,,'शेती'],['job','जॉबकार्ड क्रमांक (चौकोनात भरा)','jb'],['job2','जॉबकार्ड क्रमांक – लाभार्थी २','jb'],['bpl','दारिद्र्यरेषेखालील क्रमांक'],['bplYN','दारिद्र्यरेषेखालील आहे का','s',YN],['smallYN','अल्पभूधारक आहे का','s',YN]]],
+['काम व ग्रामसभा',[['work','कामाचे नाव'],['year','सन / आराखड्याचे साल',,,FY,1],['gsNo','ग्रामसभा ठराव क्र.'],['gsDate','ग्रामसभा ठराव दिनांक','d'],['gsPage','ठराव पृष्ठ क्र.'],['date','आजचा दिनांक','d',,TODAY],['yukta','युक्तधारा प्राधान्य क्रम (असल्यास, नाहीतर रिकामे)'],['remark','पात्र / अपात्र शेरा','s',['पात्र','अपात्र'],'पात्र']]],
+['जमीन तपशील',[['gat','गट क्र. / खाते नं. / मिळकत नं.'],['areaHa','माझ्या नावे क्षेत्र (हेक्टर)'],['ha','धारण क्षेत्र – हेक्टर'],['ar','धारण क्षेत्र – आर'],['ownAcre','एकूण जमीन धारण (एकर)'],['no1','8 अ क्रमांक – लाभार्थी १'],['no2','8 अ क्रमांक – लाभार्थी २'],['t1h','8 अ प्रमाणे एकूण क्षेत्र – लाभार्थी १ (हे.)'],['t1a','8 अ प्रमाणे एकूण क्षेत्र – लाभार्थी १ (आर)'],['t2h','8 अ प्रमाणे एकूण क्षेत्र – लाभार्थी २ (हे.)'],['t2a','8 अ प्रमाणे एकूण क्षेत्र – लाभार्थी २ (आर)'],['ownH','धारण केलेले एकूण क्षेत्र (हे.)'],['ownA','धारण केलेले एकूण क्षेत्र (आर)'],['irrig','सद्य सिंचन सुविधा','s',['','विहीर','कूपनलिका','कालवा','कोरडवाहू']]]],
+['बँक',[['acc','बँक खाते क्र.'],['ifsc','IFSC कोड'],['bank','बँकेचे नाव'],['branch','शाखा']]],
+['अधिकारी / शेतकरी',[['ta','तांत्रिक सहाय्यक नाव',,,,1],['gpo','ग्रामपंचायत अधिकारी नाव',,,,1],['gra','ग्रामरोजगार सहाय्यक नाव',,,,1],['graMob','ग्रामरोजगार सहाय्यक – मोबाईल नं.',,,,1],['far1','क्षेत्र लगतचे शेतकरी १'],['far2','क्षेत्र लगतचे शेतकरी २']]]];
+const FM={};FD.forEach(s=>s[1].forEach(f=>FM[f[0]]={l:f[1],t:f[2]||'t',o:f[3],df:f[4]||'',p:f[5]}));
+const NUMF={aadhar:['d',12,12],graMob:['d',10,10],acc:['d',18],age:['d',3],age2:['d',3],bpl:['d',20],gsPage:['d',6],ha:['f',8],ar:['f',8],ownAcre:['f',8],ownH:['f',8],ownA:['f',8],t1h:['f',8],t1a:['f',8],t2h:['f',8],t2a:['f',8],areaHa:['f',8],no1:['s',14],no2:['s',14],gsNo:['s',14],gat:['s',16],ifsc:['i',11,11]};
+Object.entries(NUMF).forEach(([k,v])=>{if(FM[k])FM[k].num={mode:v[0],max:v[1]||0,exact:v[2]||0}});
+function cleanNum(mode,max,v){let r=String(v||'');
+ if(mode==='d')r=r.replace(/[^0-9०-९]/g,'');else if(mode==='f')r=r.replace(/[^0-9०-९.]/g,'');
+ else if(mode==='s')r=r.replace(/[^0-9\/\-.\u0900-\u097F]/g,'');else if(mode==='i')r=r.toUpperCase().replace(/[^A-Z0-9]/g,'');
+ return max?[...r].slice(0,max).join(''):r}
+const BASE={nm1:'name',nm2:'name',nm3:'name',n2a:'name2',n2b:'name2',n2c:'name2',gsD:'gsDate',gsM:'gsDate',gsY:'gsDate',gsY2:'gsDate',dateD:'date',dateM:'date',dateY:'date',dateY2:'date',dateFull:'date',fy1:'year',fy2:'year',addr:'village'};
+const DL={nm1:'नावाचा पहिला शब्द',nm2:'नावाचा दुसरा शब्द',nm3:'नावाचा उर्वरित भाग',n2a:'नाव-२ पहिला शब्द',n2b:'नाव-२ दुसरा शब्द',n2c:'नाव-२ उर्वरित',gsD:'ठराव दिनांक – दिवस',gsM:'ठराव दिनांक – महिना',gsY:'ठराव दिनांक – वर्ष (४ अंक)',gsY2:'ठराव दिनांक – वर्ष (२ अंक)',dateD:'दिनांक – दिवस',dateM:'दिनांक – महिना',dateY:'दिनांक – वर्ष (४ अंक)',dateY2:'दिनांक – वर्ष (२ अंक)',dateFull:'दिनांक (पूर्ण)',fy1:'साल – सुरुवात (२ अंक)',fy2:'साल – शेवट (२ अंक)',addr:'पूर्ण पत्ता'};
+let KEYOPT='<option value="">— तसेच राहू द्या —</option>'+Object.keys(FM).map(k=>`<option value="${k}">${esc(FM[k].l)}</option>`).join('')+Object.keys(DL).map(k=>`<option value="${k}">${esc(DL[k])}</option>`).join('');
+const nz=l=>(l||'').replace(/[\s:：.\-–_()\[\]\/]/g,'');
+function regCustom(e){FM[e.k]={l:e.l,t:e.t==='d'?'d':'t',df:'',custom:1,num:e.t==='n'?{mode:'s',max:20,exact:0}:undefined}}
+const LATOK=new Set('aadhar graMob ifsc acc job job2 no1 no2 gat gsNo gsPage age age2 ha ar ownAcre ownH ownA t1h t1a t2h t2a areaHa bpl date gsDate'.split(' '));
+const b64u=b=>{const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u};
+const u2b64=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+/* ---- साठवण (IndexedDB) ---- */
+let idb=null;try{idb=new Promise((res,rej)=>{const r=indexedDB.open('vbg3',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}catch(e){}
+async function kv(m,f){try{const d=await idb;return await new Promise((res,rej)=>{const q=f(d.transaction('kv',m).objectStore('kv'));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return null}}
+/* ---- कॅटलॉग (कामे, पाने, जागा) ---- */
+let CAT=null,OV=false,NEWB={},BL={},DOCS={},PIN=PINHASH;
+async function loadCat(){
+ const ov=await kv('readonly',s=>s.get('overlay'));
+ if(ov&&ov.cat){CAT=ov.cat;OV=true;Object.entries(ov.blobs||{}).forEach(([k,v])=>{BL[k]=NEWB[k]=new Uint8Array(v)});return}
+ if(EMBED){CAT=JSON.parse(JSON.stringify(EMBED.cat));return}
+ try{CAT=await(await fetch('data/works.json?t='+Date.now(),{cache:'no-store'})).json();try{localStorage.setItem('vbg_cat',JSON.stringify(CAT))}catch(e){}}
+ catch(e){const c=localStorage.getItem('vbg_cat');if(c)CAT=JSON.parse(c);else throw e}
+ fetch('data/config.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(c=>{if(c.pinHash)PIN=c.pinHash;if(typeof c.developer==='string'){DEV=c.developer;setDev()}}).catch(()=>{});
+}
+async function saveOV(){OV=true;const bl={};Object.entries(NEWB).forEach(([k,v])=>bl[k]=v.slice().buffer);await kv('readwrite',s=>s.put({cat:CAT,blobs:bl},'overlay'));refreshUser();draftNote()}
+async function pdfBytes(id){
+ if(BL[id])return BL[id];
+ if(EMBED&&EMBED.pdfs[id])return BL[id]=b64u(EMBED.pdfs[id]);
+ const r=await fetch(CAT.pdfs[id].u);if(!r.ok)throw new Error('PDF मिळाली नाही: '+id);return BL[id]=new Uint8Array(await r.arrayBuffer());
+}
+async function doc(id){if(!DOCS[id])DOCS[id]=await pdfjsLib.getDocument({data:(await pdfBytes(id)).slice()}).promise;return DOCS[id]}
+/* ---- मूल्ये ---- */
+let V={},W=null,NEED=new Set(),canv=[];
+Object.keys(FM).forEach(k=>V[k]=FM[k].df);
+try{const o=JSON.parse(localStorage.getItem('vbg3')||'{}');Object.keys(FM).forEach(k=>{if(FM[k].p&&o[k])V[k]=o[k]})}catch(e){}
+const keep=()=>{try{const o={};Object.keys(FM).forEach(k=>{if(FM[k].p)o[k]=V[k]});localStorage.setItem('vbg3',JSON.stringify(o))}catch(e){}};
+const sp=s=>(s||'').trim().split(/\s+/).filter(Boolean),dp=s=>{const a=(s||'').split('-');return a.length==3?{d:a[2],m:a[1],y:a[0]}:{d:'',m:'',y:''}};
+function fmtJob(r){r=[...(r||'').replace(/[^0-9०-९]/g,'')];if(!r.length)return'';const p=[r.slice(0,2),r.slice(2,5),r.slice(5,8),r.slice(8,11)].map(x=>x.join('')).filter(Boolean).join('-');return'MH-'+p+(r.length>11?'/'+r.slice(11,15).join(''):'')+(r.length>15?'-'+r.slice(15).join(''):'')}
+function val(k){
+ const v=x=>(V[x]||'').trim();
+ switch(k){
+  case'nm1':return sp(v('name'))[0]||'';case'nm2':return sp(v('name'))[1]||'';case'nm3':return sp(v('name')).slice(2).join(' ');
+  case'n2a':return sp(v('name2'))[0]||'';case'n2b':return sp(v('name2'))[1]||'';case'n2c':return sp(v('name2')).slice(2).join(' ');
+  case'gsD':case'gsM':case'gsY':case'gsY2':case'dateD':case'dateM':case'dateY':case'dateY2':case'dateFull':{
+   const x=dp(v(k.startsWith('gs')?'gsDate':'date')),t=k.replace(/^(gs|date)/,'');if(!x.y)return'';
+   return t=='D'?x.d:t=='M'?x.m:t=='Y'?x.y:t=='Y2'?x.y.slice(2):x.d+'/'+x.m+'/'+x.y}
+  case'fy1':return(v('year').match(/\d{4}/)||[''])[0].slice(2);
+  case'fy2':return((v('year').split(/[-–\/]/)[1]||'').trim()).slice(-2);
+  case'addr':return v('village')?[v('village'),'ता. '+v('taluka'),'जि. '+v('district')].join(', '):'';
+  case'job':case'job2':return fmtJob(V[k]);
+ }const m0=FM[k];if(m0&&m0.custom&&m0.t==='d'){const x=dp(v(k));return x.y?x.d+'/'+x.m+'/'+x.y:''}return v(k);
+}
+/* ---- वापरकर्ता निवड ---- */
+function refreshUser(){
+ const t=$('#ctype').value||TYPES[0];$('#ctype').innerHTML=TYPES.map(x=>`<option${x===t?' selected':''}>${x}</option>`).join('');fillWorks();
+}
+function fillWorks(){
+ const ws=CAT.works.map((w,i)=>[w,i]).filter(x=>x[0].c===$('#ctype').value);
+ $('#work').innerHTML='<option value="">— निवडा —</option>'+ws.map(x=>`<option value="${x[1]}">${esc(x[0].n)}</option>`).join('');
+ W=null;$('#fcard').classList.add('hide');$('#info').textContent=ws.length?'':'या प्रकारात अजून काम जोडलेले नाही.';
+}
+$('#ctype').onchange=fillWorks;
+$('#work').onchange=()=>{const i=$('#work').value;W=i===''?null:CAT.works[+i];$('#fcard').classList.toggle('hide',!W);if(W){V.work=W.w;form()}};
+const pl=(id,n)=>CAT.pages[id+':'+n]||[];
+function placements(){const r=[],ex=new Set((W.ex||[]).map(e=>e.k));(W.ex||[]).forEach(regCustom);W.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.s&&!W.sam)return;if(!q.k)return;if(q.k.startsWith('x_')&&!ex.has(q.k))return;r.push(q)}));return r}
+function jobUI(k,label){
+ const w=document.createElement('div');w.innerHTML=`<label>${esc(label)}</label><div class="jbw"><b>MH</b></div>`;const box=w.lastChild,ins=[];
+ [['जिल्हा',2],['तालुका',3],['ग्रा.प.',3],['गाव',3],['कुटुंब',4],['अधिक',3]].forEach(([l,n])=>{
+  const g=document.createElement('div');g.className='jgp';g.innerHTML=`<div><small>${l}</small><div class="jr" style="display:flex;gap:2px"></div></div>`;const r=g.querySelector('.jr');
+  for(let i=0;i<n;i++){const e=document.createElement('input');e.className='jb';e.maxLength=1;e.setAttribute('inputmode','text');r.appendChild(e);ins.push(e)}box.appendChild(g)});
+ const upd=()=>{V[k]=ins.map(e=>e.value.trim()||' ').join('').replace(/\s+$/,'')};
+ [...(V[k]||'')].forEach((c,i)=>{if(ins[i]&&c!==' ')ins[i].value=c});
+ ins.forEach((e,i)=>{e.oninput=()=>{e.value=e.value.replace(/[^0-9०-९]/g,'');if(e.value.length>1){[...e.value].forEach((c,j)=>{if(ins[i+j])ins[i+j].value=c});e.value=[...e.value][0]}upd();if(e.value&&ins[i+1])ins[i+1].focus()};
+  e.onkeydown=ev=>{if(ev.key==='Backspace'&&!e.value&&ins[i-1]){ins[i-1].focus();ins[i-1].value='';upd()}};e.onfocus=()=>e.select()});
+ return w;
+}
+const REG=['district','taluka','gp','name','cat','job','aadhar','acc','ifsc','bank','gsNo','gsDate','gat'],ALW=[...REG,'gra','graMob'];
+function mkField(g,k){
+ const m=FM[k];if(m.t=='jb'){const j=jobUI(k,m.l);j.style.gridColumn='1/-1';g.appendChild(j);return}
+ const w=document.createElement('div');
+ const nm=m.num,hint=nm&&nm.exact?` (${nm.exact} ${nm.mode==='i'?'अक्षरे/अंक':'अंक'})`:'';
+ w.innerHTML=`<label>${esc(m.l)}${hint}</label>`+(m.t=='s'?`<select data-k="${k}">${m.o.map(o=>`<option value="${esc(o)}">${esc(o||'— निवडा —')}</option>`).join('')}</select>`:`<input lang="mr" data-k="${k}" type="${m.t=='d'?'date':'text'}">`);
+ const i=w.lastChild;if(nm){i.setAttribute('inputmode',nm.mode==='i'?'text':'numeric');if(nm.max)i.maxLength=nm.max}
+ i.value=V[k]||'';i.oninput=i.onchange=()=>{if(nm){const c=cleanNum(nm.mode,nm.max,i.value);if(c!==i.value)i.value=c}V[k]=i.value;i.classList.remove('bad');keep()};g.appendChild(w);
+}
+function section(d,title,ks){if(!ks.length)return;d.insertAdjacentHTML('beforeend',`<h2>${title}</h2>`);const g=document.createElement('div');g.className='g';d.appendChild(g);ks.forEach(k=>mkField(g,k))}
+function form(){
+ NEED=new Set();placements().forEach(q=>{const k=BASE[q.k]||q.k;if(FM[k])NEED.add(k)});
+ $('#info').textContent=`या कामासाठी ${W.p.length} पाने छापली जातील. फॉर्म मराठीतूनच भरा.`;$('#ferr').textContent='';
+ const d=$('#fields');d.innerHTML='';
+ section(d,'सर्व फॉर्मसाठी कायम माहिती',REG);
+ section(d,'ग्रामरोजगार सहाय्यक (फॉर्मच्या शीर्षकात व सहीसाठी)',['gra','graMob']);
+ FD.forEach(([sec,fs])=>section(d,sec,fs.map(f=>f[0]).filter(k=>NEED.has(k)&&!ALW.includes(k))));
+ section(d,'या फॉर्मची अतिरिक्त माहिती',(W.ex||[]).map(e=>e.k));
+}
+function marathiCheck(){
+ const bad=[];document.querySelectorAll('#fields [data-k]').forEach(e=>{const k=e.dataset.k,m=FM[k];e.classList.remove('bad');
+  if(!m)return;const v=V[k]||'';
+  if(m.num){if(m.num.exact&&v&&[...v].length!==m.num.exact){bad.push(m.l+' ('+m.num.exact+' अंक/अक्षरे हवेत)');e.classList.add('bad')}return}
+  if(m.t==='t'&&!LATOK.has(k)&&/[A-Za-z]/.test(v)){bad.push(m.l+' (मराठीत भरा)');e.classList.add('bad')}});return bad;
+}
+/* ---- PDF तयार करणे ---- */
+const SC=1.7,BGC={},SGC={};
+async function build(){
+ await document.fonts.load('700 16px '+FONT,'अआक');
+ const fs=12,out=$('#out');out.innerHTML='';canv=[];let SKIP=0;
+ $('#p1').classList.add('hide');$('#res').classList.remove('hide');
+ const exSet=new Set((W.ex||[]).map(e=>e.k));(W.ex||[]).forEach(regCustom);
+ const gra=(V.gra||'').trim(),mob=(V.graMob||'').trim();
+ for(let pi=0;pi<W.p.length;pi++){
+  const[id,n]=W.p[pi],key=id+':'+n;$('#msg').textContent=`पान ${pi+1}/${W.p.length} तयार होत आहे…`;
+  await new Promise(r=>setTimeout(r,0));
+  const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:SC});
+  let bg=BGC[key];if(!bg){bg=document.createElement('canvas');bg.width=vp.width;bg.height=vp.height;await pg.render({canvasContext:bg.getContext('2d'),viewport:vp}).promise;BGC[key]=bg}
+  const c=document.createElement('canvas');c.width=bg.width;c.height=bg.height;const ctx=c.getContext('2d');ctx.drawImage(bg,0,0);
+  const sigs=SGC[key]||(SGC[key]=await sigSpots(pg)),big=fs*SC,plan=[];ctx.textBaseline='alphabetic';
+  pl(id,n).forEach(q=>{
+   if(!q.k||(q.s&&!W.sam)||(q.k.startsWith('x_')&&!exSet.has(q.k)))return;
+   if(q.bx){plan.push({q,box:1});return}
+   const v=val(q.k);if(!v)return;
+   const lim=Math.max(q.w||0,q.mw||0)*SC;let f=big;ctx.font=`700 ${f}px ${FONT}`;const tw=ctx.measureText(v).width,over=lim>10*SC&&tw>lim;
+   if(over){const sc=lim/tw;if(sc<.45){SKIP++;return}f=big*Math.max(.8,sc);ctx.font=`700 ${f}px ${FONT}`}
+   plan.push({q,v,f,lim:over?lim:0})});
+  ctx.fillStyle='#fff';
+  plan.forEach(p=>{if(p.box)return;const[a1,b1]=vp.convertToViewportPoint(p.q.x-1.5,p.q.y+5),[a2,b2]=vp.convertToViewportPoint(p.q.x+p.q.w+1,p.q.y-4.5);ctx.fillRect(a1,b1,a2-a1,b2-b1)});
+  ctx.fillStyle='#000';
+  plan.forEach(p=>{const q=p.q,[x,y]=vp.convertToViewportPoint(q.x,q.y);
+   if(p.box){const s=[...(V[q.k]||'').replace(/[^0-9०-९]/g,'')],bx=q.bx,nb=bx.length-1;ctx.font=`700 ${big}px ${FONT}`;ctx.textAlign='center';
+    s.forEach((ch,i)=>{let a,b;if(i<nb){a=bx[i];b=bx[i+1]}else{const w=bx[nb]-bx[nb-1];a=bx[nb]+(i-nb)*w;b=a+w}
+     const x0=vp.convertToViewportPoint(a,0)[0],x1=vp.convertToViewportPoint(b,0)[0];ctx.fillText(ch,(x0+x1)/2,y)});ctx.textAlign='left';return}
+   ctx.font=`700 ${p.f}px ${FONT}`;p.lim?ctx.fillText(p.v,x,y,p.lim):ctx.fillText(p.v,x,y)});
+  const PW=pg.view[2],PT=pg.view[3],PB=pg.view[1];ctx.fillStyle='#000';
+  if(gra||mob){ctx.font=`700 ${9*SC}px ${FONT}`;ctx.textAlign='center';const[hx,hy]=vp.convertToViewportPoint((pg.view[0]+PW)/2,PT-16);ctx.fillText('ग्रामरोजगार सहाय्यक: '+gra+(mob?'    मोबाईल: '+mob:''),hx,hy,vp.width*.9);ctx.textAlign='left'}
+  sigs.forEach(s=>{const LB='ग्रामरोजगार सहाय्यक';ctx.font=`700 ${11*SC}px ${FONT}`;const lw=ctx.measureText(LB).width/SC;let lx=s.x0-lw-22;if(lx<28){lx=s.x1+22;if(lx+lw>PW-22)return}
+   const[sx,sy]=vp.convertToViewportPoint(lx,s.y);ctx.fillText(LB,sx,sy);
+   if(gra){ctx.font=`700 ${9*SC}px ${FONT}`;const[nx,ny]=vp.convertToViewportPoint(lx,s.y-12);ctx.fillText('('+gra+')',nx,ny,lw*SC+30)}});
+  if(DEV){ctx.font=`700 ${6.5*SC}px ${FONT}`;ctx.fillStyle='#333';ctx.textAlign='right';const[dx,dy]=vp.convertToViewportPoint(PW-22,PB+9);ctx.fillText('विकसक: '+DEV,dx,dy);ctx.textAlign='left'}
+  canv.push({c,w:pg.view[2]-pg.view[0],h:pg.view[3]-pg.view[1]});out.appendChild(c);
+ }
+ $('#msg').textContent='पूर्वावलोकन तपासा, नंतर प्रिंट किंवा डाउनलोड करा.'+(SKIP?` (${SKIP} ठिकाणी जागा खूप कमी असल्याने ती रेषा/ठिपके तसेच ठेवले आहेत.)`:'');
+}
+$('#gen').onclick=async()=>{
+ if(!W)return;const bad=marathiCheck();
+ if(bad.length){$('#ferr').textContent='कृपया दुरुस्त करा: '+bad.join(', ');return}
+ $('#ferr').textContent='';$('#gen').disabled=true;$('#gen').textContent='तयार होत आहे…';
+ try{await build()}catch(e){alert('त्रुटी: '+e.message)}$('#gen').disabled=false;$('#gen').textContent='PDF तयार करा';
+};
+$('#back').onclick=()=>{$('#res').classList.add('hide');$('#p1').classList.remove('hide')};
+async function makePdf(){const D=await PDFLib.PDFDocument.create();for(const{c,w,h}of canv){const img=await D.embedJpg(c.toDataURL('image/jpeg',.92)),pg=D.addPage([w,h]);pg.drawImage(img,{x:0,y:0,width:w,height:h})}return await D.save()}
+const fname=()=>(((V.name||'')+' '+(W.n||'form')).trim()||'form')+'.pdf';
+async function saveBytes(bytes,name){
+ if(window.AndroidBridge){AndroidBridge.savePdf(name,u2b64(bytes));return}
+ if(typeof claude!=='undefined'&&claude.use){const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data:bytes});return}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bytes],{type:'application/octet-stream'}));a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+$('#print').onclick=async()=>{try{if(window.AndroidBridge){AndroidBridge.printPdf(fname(),u2b64(await makePdf()))}else window.print()}catch(e){$('#msg').textContent='प्रिंट अयशस्वी – "PDF डाउनलोड" वापरा.'}};
+$('#dl').onclick=async()=>{try{await saveBytes(await makePdf(),fname())}catch(e){if(!e||e.code!=='declined')$('#msg').textContent='डाउनलोड अयशस्वी: '+((e&&e.message)||e)}};
+
+/* =============== ADMIN =============== */
+async function sha(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return s==='1234'?PINHASH:''}}
+let taps=0,tt;$('#logo').onclick=()=>{taps++;clearTimeout(tt);tt=setTimeout(()=>taps=0,3500);if(taps>=7){taps=0;$('#gate').classList.toggle('hide')}};
+$('#pinok').onclick=async()=>{if(await sha($('#pin').value)===PIN){$('#pin').value='';$('#gate').classList.add('hide');$('#p1').classList.add('hide');$('#adm').classList.remove('hide');atab(1);draftNote()}else $('#pinmsg').textContent='चुकीचा PIN'};
+$('#admx').onclick=()=>{$('#adm').classList.add('hide');$('#p1').classList.remove('hide');refreshUser()};
+function draftNote(){$('#draftnote').textContent=OV?'⚠️ तुमचे बदल फक्त या मोबाईलवर (ड्राफ्ट) आहेत. सर्वांपर्यंत पोहोचवण्यासाठी "प्रकाशित करा" टॅब वापरा.':''}
+function atab(n){[1,2,3,4].forEach(i=>{$('#a'+i).classList.toggle('hide',i!==n);$('#at'+i).classList.toggle('o',i!==n);$('#at'+i).classList.toggle('on',i===n)});$('#ped').classList.add('hide');if(n===2)renderManage();if(n===3){loadGh();$('#devin').value=DEV}if(n===4)renderExtra()}
+[1,2,3,4].forEach(i=>$('#at'+i).onclick=()=>atab(i));
+/* प्रश्न */
+function qcheck(){
+ const n=$('#q1').value.trim(),t=$('#q2').value,m=$('#q3').value,x=$('#q4').value;let e='';
+ if(!n)e='१. कामाचे नाव लिहा.';else if(!/[\u0900-\u097F]/.test(n)||/[A-Za-z]/.test(n))e='कामाचे नाव मराठीत (देवनागरीत) लिहा.';
+ else if(!t)e='२. कामाचा प्रकार निवडा (वैयक्तिक / सामूहिक / सार्वजनिक).';
+ else if(m!=='होय')e=m==='नाही'?'फॉर्म मराठीतच असणे अनिवार्य आहे – मराठी फॉर्म वापरा.':'३. फॉर्म मराठीत आहे का ते निवडा.';
+ else if(!x)e='४. PDF मधील मजकूर निवडता येतो का ते निवडा.';
+ else if(x==='नाही')e='ℹ️ स्कॅन केलेल्या PDF मध्ये जागा आपोआप ओळखता येणार नाही; पुढच्या पायरीवर PDF वर क्लिक करून जागा द्याव्या लागतील.';
+ $('#qmsg').textContent=e;const ok=!e||e.startsWith('ℹ️');$('#qf').disabled=!ok;return ok;
+}
+['q1','q2','q3','q4'].forEach(i=>{$('#'+i).oninput=$('#'+i).onchange=qcheck});
+let NEWPDF=null;
+$('#qf').onchange=async e=>{
+ const f=e.target.files[0];if(!f||!qcheck())return;const u=new Uint8Array(await f.arrayBuffer());let pdf;
+ try{pdf=await pdfjsLib.getDocument({data:u.slice()}).promise}catch(x){$('#qmsg').textContent='PDF वाचता आली नाही.';return}
+ NEWPDF={id:'u'+Date.now(),u,name:f.name.replace(/\.pdf$/i,''),np:pdf.numPages,pdf};
+ $('#pgsel').innerHTML=Array.from({length:pdf.numPages},(_,i)=>`<label style="display:inline-block;margin-right:12px;color:var(--tx)"><input type="checkbox" checked style="width:auto" value="${i+1}"> पान ${i+1}</label>`).join('');
+ $('#pgbox').classList.remove('hide');
+};
+$('#detbtn').onclick=async()=>{
+ if(!NEWPDF||!qcheck())return;const sel=[...document.querySelectorAll('#pgsel input:checked')].map(x=>+x.value);if(!sel.length){$('#detmsg').textContent='किमान एक पान निवडा.';return}
+ $('#detmsg').textContent='जागा ओळखत आहे…';const N=NEWPDF;BL[N.id]=NEWB[N.id]=N.u;DOCS[N.id]=N.pdf;CAT.pdfs[N.id]={n:N.name,u:''};
+ for(const n of sel)CAT.pages[N.id+':'+n]=await detectAny(N.pdf,n);
+ const t=$('#q2').value;CAT.works.push({id:'w'+Date.now(),n:$('#q1').value.trim(),c:t,w:$('#q1').value.trim(),sam:t==='सामूहिक'?1:0,p:sel.map(n=>[N.id,n])});
+ const allp=sel.flatMap(n=>CAT.pages[N.id+':'+n]||[]).filter(q=>q.k),nm=[...new Set(allp.map(q=>q.fl||(FM[q.k]||{}).l||DL[q.k]||q.k))];
+ ANOTE=allp.length?`✅ <b>${allp.length}</b> जागा ओळखल्या: <b>${esc(nm.join(', '))}</b>. ही माहिती सर्व फॉर्मसाठी कायम असलेल्या रकान्यांतून आपोआप भरली जाईल.<br>या फॉर्मला आणखी माहिती लागत असेल (उदा. कामाचा सांकेतांक) तर <b>अतिरिक्त माहिती</b> टॅबमध्ये रकाना जोडा. जागा चुकीची असेल तर खाली काम उघडून पानाची "जागा" दाबा. नंतर "प्रकाशित करा".`:'⚠️ या PDF मध्ये ओळखीच्या जागा आपोआप सापडल्या नाहीत. खाली काम उघडून "जागा" दाबा आणि पानावर क्लिक करून जागा ठरवा.';
+ await saveOV();NEWPDF=null;$('#pgbox').classList.add('hide');$('#qf').value='';$('#detmsg').textContent='';
+ ['q1','q2','q3','q4'].forEach(i=>$('#'+i).value='');qcheck();atab(2);const ds=document.querySelectorAll('#a2 details');const last=ds[ds.length-1];if(last){last.open=true;last.scrollIntoView()}
+};
+/* जागा ओळखणे */
+const dev=i=>String(i).replace(/\d/g,d=>'०१२३४५६७८९'[d]);
+function lab(pre,post){
+ const cl=s=>s.replace(/^[\s\d०-९\.\)\(\-–•]+/,'').replace(/[:：_.…\-–•()\[\]]+/g,' ').replace(/\s+/g,' ').trim();
+ let a=cl(pre).split(' ').filter(Boolean).slice(-4).join(' ');
+ if(!a)a=cl(post).split(' ').filter(Boolean).slice(0,3).join(' ');
+ return a.length>40?a.slice(-40):a;
+}
+/* स्कॅन केलेल्या PDF साठी: चित्रातील आडव्या रेषा शोधणे */
+async function detectLines(pdf,n){
+ const SC=1.5,pg=await pdf.getPage(n),vp=pg.getViewport({scale:SC}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+ const ctx=c.getContext('2d',{willReadFrequently:true});ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:ctx,viewport:vp}).promise;
+ const W=c.width,H=c.height,d=ctx.getImageData(0,0,W,H).data,dk=(x,y)=>{const i=(y*W+x)*4;return d[i]+d[i+1]+d[i+2]<450};
+ const segs=[];
+ for(let y=2;y<H-2;y++){let x=0;while(x<W){if(!dk(x,y)){x++;continue}let s=x,e=x,gap=0,cnt=0;while(x<W&&gap<=2){if(dk(x,y)){e=x;gap=0;cnt++}else gap++;x++}
+  const L=e-s+1;if(L>=70&&L<W*.62&&cnt/L>.88)segs.push({y,s,e})}}
+ const lines=[];segs.forEach(g=>{const p=lines.find(l=>g.y-l.y1<=1&&Math.min(g.e,l.e)-Math.max(g.s,l.s)>.7*(g.e-g.s));if(p){p.y1=g.y;p.s=Math.min(p.s,g.s);p.e=Math.max(p.e,g.e);p.t++}else lines.push({y0:g.y,y1:g.y,s:g.s,e:g.e,t:1})});
+ const vcol=(x,y)=>{if(x<0||x>=W)return false;let k=0;for(let j=y-14;j<=y+14;j++)if(j>=0&&j<H&&dk(x,j))k++;return k>=22};
+ const out=[];let i=0;
+ lines.filter(l=>l.t<=5).sort((a,b)=>a.y1-b.y1||a.s-b.s).forEach(l=>{
+  if(vcol(l.s+1,l.y1)||vcol(l.e-1,l.y1)||vcol(l.s-2,l.y1)||vcol(l.e+2,l.y1))return;
+  i++;const[x,y]=vp.convertToPdfPoint(l.s,l.y1),fl='माहिती '+dev(i);
+  out.push({k:'',x:+(x+1).toFixed(1),y:+(y+2.5).toFixed(1),w:+((l.e-l.s)/SC-2).toFixed(1),s:0,l:'रेषा'})});
+ return out;
+}
+const detectAny=async(pdf,n)=>{let r=await detectPage(pdf,n);if(!r.length)r=await detectLines(pdf,n);return r};
+async function sigSpots(pg){
+ const tc=await pg.getTextContent(),H=pg.view[3]-pg.view[1],items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],w:i.width})),lines=[];
+ items.forEach(it=>{let L=lines.find(l=>Math.abs(l.y-it.y)<4);if(!L){L={y:it.y,a:[]};lines.push(L)}L.a.push(it)});
+ const out=[];
+ lines.sort((a,b)=>b.y-a.y).forEach(L=>{
+  if(L.y-pg.view[1]>H*.55)return;const txt=L.a.map(a=>a.s).join('').replace(/\s+/g,'');
+  if(!/सेवक|सरप.{0,3}च|िरप.{0,3}च|अ.{1,3}का?री|ग्रा.{0,2}वव.{0,2}अ/.test(txt)||/रोजगार|रोर्गार|रोर्ग|रोजग|गट|कार्य|कायज|कायम|क्रम|मा\.|प्रति|लाभ|तांत्रिक|तांि|कृषी|वनपाल|सहाय्यक|सह\.|यांचा|यांचे|दाखला/.test(txt)||txt.length>45||/[_.\-–]{6,}/.test(txt)||/^[०-९0-9]/.test(txt))return;
+  if(txt.replace(/ग्रा.{0,2}मसेवक|ग्रा.{0,2}वव.{0,2}अ\.?|सरप.{0,3}च|िरप.{0,3}च|ग्रा.{0,2}मप.{0,3}य?त|अ.{1,3}का?री|ग्रामविकास|सेवक|[\/.\-–()]/g,'').length>8)return;
+  if(out.length&&Math.abs(out[out.length-1].y-L.y)<22)return;
+  out.push({y:L.y,x0:Math.min(...L.a.map(a=>a.x)),x1:Math.max(...L.a.map(a=>a.x+a.w))})});
+ return out;
+}
+function classify(pre,post){
+ const P=pre.replace(/\s+/g,''),Q=post.replace(/\s+/g,'');
+ if(/आधार/.test(P))return'aadhar';
+ if(/सन$/.test(P))return'year';if(P==='मी')return'name';
+ if(P===''&&/^ता/.test(Q))return'village';
+ if(/(अतं?गत[जग]?|अंतर्गत)$/.test(P)&&Q==='')return'work';
+ if(/(अर्?[जद]ाराचे|लाभार्थीचे|लाभाथीचे)(पूर्ण)?नाव$/.test(P)||/ाराचे.*नाव$/.test(P))return'name';
+ if(/(ग्रामपचं?ायत|ग्रामपंचायत|ग्रांमपचं?ायत|ग्रांप)-?:?$/.test(P)&&!/^(समळकत|मिळकत)/.test(Q))return'gp';
+ if(/(राहणार|रा\.?|मौजे|मौर्े|मौर्_े|ठिकाण|स्थळ|गाव)-?:?$/.test(P))return'village';
+ if(/श्री(मती)?\.?$|श्रीमती\.?$|श्री\/श्रीमती\.?$/.test(P))return'name';
+ if(/(समळकत|मिळकत)न\.?ं?$/.test(P)||/(गट|खाते)(नं|क्र|नंबर)\.?-?$/.test(P))return'gat';
+ if(/ठराव(क्र|क्रमांक)\.?-?:?$/.test(P))return'gsNo';
+ if(/वय$/.test(P))return'age';if(/धंदा$/.test(P))return'occ';if(/जॉब(कार्ड|काडज)/.test(P))return'job';
+ if(/(तारीख|दिनांक)-?:?$/.test(P)&&Q==='')return'dateFull';
+ if(/^(हे ?काम|कामाबाबि|करणे ?कामी|या ?कामासाठी|प्रस्िाि|कामास|मागणी)/.test(Q))return'work';
+ if(/(जिल्हा|जि\.?|जर्\.)-?$/.test(P))return'district';
+ if(/(तालुका|ता\.?|समिती|ससमती)-?$/.test(P))return'taluka';
+ if(/बँकेचेनाव$/.test(P))return'bank';if(/IFSC/i.test(P))return'ifsc';if(/खातेक्र/.test(P))return'acc';if(/प्रवर्ग/.test(P))return'cat';
+ return'';
+}
+async function detectPage(pdf,n){
+ const pg=await pdf.getPage(n),tc=await pg.getTextContent(),RE=/[_.…\-–]{4,}|(?:\.\s?){5,}/g,res=[];
+ const its=tc.items.filter(i=>i.str&&i.str.length).map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],w:i.width,h:Math.abs(i.transform[0])||10}));
+ const lines=[];its.forEach(it=>{let L=lines.find(l=>Math.abs(l.y-it.y)<3);if(!L){L={y:it.y,a:[]};lines.push(L)}L.a.push(it)});
+ lines.forEach(L=>{
+  L.a.sort((a,b)=>a.x-b.x);const seg=[];
+  L.a.forEach(it=>{let last=0,m;RE.lastIndex=0;const len=it.s.length;
+   while((m=RE.exec(it.s))){if(m.index>last)seg.push({t:it.s.slice(last,m.index)});seg.push({b:1,x:it.x+it.w*m.index/len,w:it.w*m[0].length/len,y:it.y,h:it.h});last=m.index+m[0].length}
+   if(last<len)seg.push({t:it.s.slice(last)})});
+  seg.forEach((s,i)=>{if(!s.b||s.w<8)return;let pre='',post='';for(let j=i-1;j>=0&&!seg[j].b;j--)pre=seg[j].t+pre;for(let j=i+1;j<seg.length&&!seg[j].b;j++)post+=seg[j].t;
+   const k0=classify(pre,post);res.push({k:k0,x:+(s.x+1).toFixed(1),y:+(s.y+1.5).toFixed(1),w:+(s.w-2).toFixed(1),s:0,l:pre.trim().slice(-22),cx:pre.slice(-30)+' '+post.slice(0,20)})})
+ });
+ return res;
+}
+/* कामे / पाने सांभाळा */
+const rng=(t,np)=>{const o=new Set();t.split(/[,\s]+/).forEach(p=>{const m=p.match(/^(\d+)(?:-(\d+))?$/);if(m){for(let i=+m[1];i<=+(m[2]||m[1]);i++)if(i>=1&&i<=np)o.add(i)}});return[...o]};
+let ANOTE='';
+function renderManage(){
+ const box=$('#a2');box.innerHTML='';
+ if(ANOTE){box.insertAdjacentHTML('beforeend',`<div class="card">${ANOTE}</div>`);ANOTE=''}
+ TYPES.forEach(t=>{const ws=CAT.works.map((w,i)=>[w,i]).filter(x=>x[0].c===t);if(!ws.length)return;box.insertAdjacentHTML('beforeend',`<h2>${t}</h2>`);
+  ws.forEach(([w,wi])=>{const d=document.createElement('details');d.className='card';d.innerHTML=`<summary><b>${esc(w.n)}</b> <span class="mu">(${w.p.length} पाने)</span></summary><div class="wb"></div>`;d.ontoggle=()=>{if(d.open&&!d.dataset.f){d.dataset.f=1;fillWork(d,w)}};box.appendChild(d)})});
+}
+async function fillWork(d,w){
+ const wb=d.querySelector('.wb');
+ wb.innerHTML=`<label>कामाचे नाव</label><input class="wn" lang="mr" value="${esc(w.n)}"><label>कामाचा प्रकार</label><select class="wc">${TYPES.map(t=>`<option${t===w.c?' selected':''}>${t}</option>`).join('')}</select>
+ <label><input type="checkbox" class="wsam" style="width:auto"${w.sam?' checked':''}> दोन लाभार्थी असू शकतात (सामूहिक पाने/जागा दाखवा)</label>
+ <p><button class="o wsv">नाव / प्रकार जतन करा</button> <button class="d wdel">हे काम हटवा</button></p><h2>पाने</h2><div class="pgl"></div>
+ <h2>पान जोडा</h2><div class="row"><select class="ap">${Object.entries(CAT.pdfs).map(([k,v])=>`<option value="${k}">${esc(v.n)}</option>`).join('')}</select><input type="text" class="apn" value="1" style="width:120px" placeholder="पान क्र."><button class="o apb">जोडा</button></div>
+ <p class="mu">पान क्रमांक: 1 किंवा 1,3 किंवा 2-4. किंवा नवीन PDF:</p><div class="row"><input type="file" accept="application/pdf" class="apf"></div>`;
+ const reload=()=>{fillWorkPages();saveOV()};
+ wb.querySelector('.wsv').onclick=async()=>{const n=wb.querySelector('.wn').value.trim();if(!/[\u0900-\u097F]/.test(n)||/[A-Za-z]/.test(n)){alert('नाव मराठीत लिहा.');return}w.n=n;w.c=wb.querySelector('.wc').value;w.sam=wb.querySelector('.wsam').checked?1:0;await saveOV();renderManage()};
+ wb.querySelector('.wdel').onclick=async()=>{if(!confirm('हे काम हटवायचे?'))return;CAT.works=CAT.works.filter(x=>x!==w);await saveOV();renderManage()};
+ const fillWorkPages=async()=>{
+  const L=wb.querySelector('.pgl');L.innerHTML='';
+  for(let i=0;i<w.p.length;i++){const[id,n]=w.p[i],r=document.createElement('div');r.className='th';
+   r.innerHTML=`<canvas></canvas><div style="flex:1"><div>${esc((CAT.pdfs[id]||{}).n||id)} – पान ${n}</div><div class="mu">${pl(id,n).filter(q=>q.k).length} जागा भरल्या जातात</div></div><button class="o s up">↑</button><button class="o s dn">↓</button><button class="o s ed">जागा</button><button class="d s rm">✕</button>`;
+   r.querySelector('.up').onclick=()=>{if(i>0){[w.p[i-1],w.p[i]]=[w.p[i],w.p[i-1]];reload()}};
+   r.querySelector('.dn').onclick=()=>{if(i<w.p.length-1){[w.p[i+1],w.p[i]]=[w.p[i],w.p[i+1]];reload()}};
+   r.querySelector('.rm').onclick=()=>{if(w.p.length<2){alert('किमान एक पान ठेवा.');return}w.p.splice(i,1);reload()};
+   r.querySelector('.ed').onclick=()=>pedit(w,reload,i);L.appendChild(r);
+   (async()=>{try{const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:.35}),c=r.querySelector('canvas');c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise}catch(e){}})();
+  }};
+ await fillWorkPages();
+ wb.querySelector('.apb').onclick=async()=>{const id=wb.querySelector('.ap').value,pdf=await doc(id),ns=rng(wb.querySelector('.apn').value,pdf.numPages);
+  if(!ns.length){alert('पान क्रमांक बरोबर नाही.');return}
+  for(const n of ns){if(!CAT.pages[id+':'+n])CAT.pages[id+':'+n]=await detectAny(pdf,n);w.p.push([id,n])}reload()};
+ wb.querySelector('.apf').onchange=async e=>{const f=e.target.files[0];if(!f)return;const u=new Uint8Array(await f.arrayBuffer());let pdf;
+  try{pdf=await pdfjsLib.getDocument({data:u.slice()}).promise}catch(x){alert('PDF वाचता आली नाही');return}
+  const rs=wb.querySelector('.apn').value,ns=rng(rs,pdf.numPages);const use=ns.length?ns:Array.from({length:pdf.numPages},(_,i)=>i+1);
+  const id='u'+Date.now();BL[id]=NEWB[id]=u;DOCS[id]=pdf;CAT.pdfs[id]={n:f.name.replace(/\.pdf$/i,''),u:''};
+  for(const n of use){CAT.pages[id+':'+n]=await detectAny(pdf,n);w.p.push([id,n])}
+  wb.querySelector('.ap').innerHTML=Object.entries(CAT.pdfs).map(([k,v])=>`<option value="${k}">${esc(v.n)}</option>`).join('');reload()};
+}
+/* अतिरिक्त माहिती (प्रत्येक फॉर्मसाठी वेगळे रकाने) */
+const exInfo=(w,k)=>{let c=0,first=0,f=true;w.p.forEach(([id,n],i)=>pl(id,n).forEach(q=>{if(q.k===k){c++;if(f){first=i;f=false}}}));return{c,first}};
+const moveKey=(w,a,b)=>w.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.k===a)q.k=b}));
+function renderExtra(){
+ const sel=$('#x_work'),cur=sel.value;sel.innerHTML=CAT.works.map((w,i)=>`<option value="${i}">${esc(w.n)} (${w.c})</option>`).join('');if(cur!==''&&CAT.works[+cur])sel.value=cur;
+ const w=CAT.works[+sel.value],L=$('#x_list');L.innerHTML='';if(!w)return;w.ex=w.ex||[];
+ L.insertAdjacentHTML('beforeend',`<h2>या कामाचे अतिरिक्त रकाने (${w.ex.length})</h2>`+(w.ex.length?'':'<p class="mu">अजून एकही अतिरिक्त रकाना जोडलेला नाही.</p>'));
+ w.ex.forEach(e=>{const inf=exInfo(w,e.k),r=document.createElement('div');r.className='row';
+  r.innerHTML=`<input class="xl" lang="mr" value="${esc(e.l)}" style="flex:2"><span class="mu" style="white-space:nowrap">${inf.c?inf.c+' जागा':'जागा ठरलेली नाही'}</span><button class="o s xg">जागा</button><button class="d s xd">✕</button>`;
+  r.querySelector('.xl').onchange=async ev=>{const nl=ev.target.value.trim();if(!/[\u0900-\u097F]/.test(nl)||/[A-Za-z]/.test(nl)){alert('नाव मराठीत लिहा.');ev.target.value=e.l;return}
+   const nk='x_'+nz(nl);if(nk!==e.k&&w.ex.some(x=>x.k===nk)){alert('हे नाव आधीच आहे.');ev.target.value=e.l;return}
+   moveKey(w,e.k,nk);e.k=nk;e.l=nl;await saveOV();renderExtra()};
+  r.querySelector('.xd').onclick=async()=>{if(!confirm('हा रकाना काढायचा? PDF मधील ती जागा रिकामी राहील.'))return;moveKey(w,e.k,'');w.ex=w.ex.filter(x=>x!==e);await saveOV();renderExtra()};
+  r.querySelector('.xg').onclick=async()=>{await pedit(w,renderExtra,inf.first);$('#newkey').value=e.k};L.appendChild(r)});
+}
+$('#x_work').onchange=renderExtra;
+$('#x_add').onclick=async()=>{
+ const w=CAT.works[+$('#x_work').value],lbl=$('#x_label').value.trim(),m=$('#x_msg');
+ if(!w){m.textContent='आधी काम निवडा.';return}
+ if(!/[\u0900-\u097F]/.test(lbl)||/[A-Za-z]/.test(lbl)){m.textContent='रकान्याचे नाव मराठीत (देवनागरीत) लिहा.';return}
+ const k='x_'+nz(lbl),ty=$('#x_type').value;w.ex=w.ex||[];if(w.ex.some(e=>e.k===k)){m.textContent='हा रकाना आधीच आहे.';return}
+ w.ex.push({k,l:lbl,t:ty});m.textContent='PDF मध्ये जागा शोधत आहे…';
+ const full=nz(lbl),words=lbl.replace(/[:：\-–_.()]/g,' ').split(/\s+/).map(nz).filter(x=>x.length>=3),dets=[];let found=0;
+ try{for(const[id,n]of w.p)dets.push({id,n,bl:await detectPage(await doc(id),n)})}catch(e){m.textContent='PDF वाचता आली नाही: '+e.message}
+ for(const pass of[0,1]){if(found)break;
+  dets.forEach(({id,n,bl})=>{const arr=CAT.pages[id+':'+n]=CAT.pages[id+':'+n]||[];
+   bl.forEach(b=>{const c=nz(b.cx||'');if(!(pass===0?c.includes(full):words.some(x=>c.includes(x))))return;
+    const ex=arr.findIndex(q=>Math.abs(q.x-b.x)<3&&Math.abs(q.y-b.y)<3);if(ex>=0){if(arr[ex].k&&!arr[ex].k.startsWith('x_'))return;arr.splice(ex,1)}
+    arr.push({k,x:b.x,y:b.y,w:b.w,s:0,l:b.l});found++})})}
+ await saveOV();$('#x_label').value='';renderExtra();
+ if(found){m.textContent=`✅ "${lbl}" हा रकाना जोडला. PDF मध्ये ${found} जागा सापडली. आता तो ॲपच्या फॉर्ममध्ये दिसेल. जागा चुकीची असेल तर वरच्या यादीत "जागा" दाबा. नंतर "प्रकाशित करा".`;return}
+ m.textContent=`✅ "${lbl}" हा रकाना जोडला (ॲपमध्ये दिसेल). जागा आपोआप सापडली नाही; खाली सर्व पाने उघडली आहेत – जिथे ती माहिती भरायची तिथे क्लिक करा, मग "जतन करा".`;
+ await pedit(w,renderExtra,0);$('#newkey').value=k;
+};
+/* जागा संपादक – कामाची सर्व पाने */
+let PE=null;
+async function pedit(w,done,start){
+ PE={done};$('#ped').classList.remove('hide');$('#pedt').textContent=w.n;
+ const ex=w.ex||[],optsFor=KEYOPT+ex.map(e=>`<option value="${e.k}">★ ${esc(e.l)}</option>`).join('');
+ $('#newkey').innerHTML=optsFor.replace('— तसेच राहू द्या —','— माहिती निवडा —');
+ $('#plist').innerHTML='';const box=$('#pcan');box.innerHTML='';
+ w.p.forEach(([id,n],pi)=>{const s=document.createElement('div');s.id='pg_'+pi;s.innerHTML=`<h2>पान ${pi+1} – ${esc((CAT.pdfs[id]||{}).n||id)} (${n})</h2><div class="rows"></div><div class="pw"><canvas></canvas></div>`;box.appendChild(s)});
+ $('#ped').scrollIntoView();
+ for(let pi=0;pi<w.p.length;pi++){await paintPage(document.getElementById('pg_'+pi),w,w.p[pi][0],w.p[pi][1],optsFor);if(pi===(start||0)&&start)document.getElementById('pg_'+pi).scrollIntoView()}
+}
+async function paintPage(sec,w,id,n,opts){
+ const arr=CAT.pages[id+':'+n]=CAT.pages[id+':'+n]||[],rows=sec.querySelector('.rows'),c=sec.querySelector('canvas'),exk=new Set((w.ex||[]).map(e=>e.k));
+ const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:1.2});c.width=vp.width;c.height=vp.height;
+ const ctx=c.getContext('2d');await pg.render({canvasContext:ctx,viewport:vp}).promise;const img=ctx.getImageData(0,0,c.width,c.height);
+ const live=q=>q.k&&(!q.k.startsWith('x_')||exk.has(q.k)),lab=q=>((w.ex||[]).find(e=>e.k===q.k)||{}).l||(FM[q.k]||{}).l||DL[q.k]||q.k;
+ function paint(){ctx.putImageData(img,0,0);arr.forEach(q=>{const[x,y]=vp.convertToViewportPoint(q.x,q.y),ok=live(q);ctx.fillStyle=ok?'rgba(30,140,60,.25)':'rgba(220,50,50,.2)';ctx.strokeStyle=ok?'#1e8c3c':'#d33';
+  const ww=(q.bx?(q.bx[q.bx.length-1]-q.x):q.w||60)*1.2;ctx.fillRect(x,y-13,ww,16);ctx.strokeRect(x,y-13,ww,16);if(ok){ctx.fillStyle='#064';ctx.font='10px '+FONT;ctx.fillText(lab(q),x,y-15)}})}
+ function list(){rows.innerHTML='';arr.forEach((q,i)=>{const r=document.createElement('div');r.className='row';
+  r.innerHTML=`<span style="flex:1;font-size:.85rem" class="mu">${esc(q.l||(q.bx?'जॉबकार्ड चौकोन':'✋ हाताने'))}</span><select style="flex:1.4">${opts}</select><label style="margin:0;white-space:nowrap"><input type="checkbox" style="width:auto"${q.s?' checked':''}> सामूहिक</label><button class="d s">✕</button>`;
+  const sel=r.querySelector('select');sel.value=live(q)?q.k:'';sel.onchange=()=>{q.k=sel.value;paint()};
+  r.querySelector('input').onchange=e=>q.s=e.target.checked?1:0;
+  r.querySelector('button').onclick=()=>{arr.splice(i,1);list();paint()};rows.appendChild(r)})}
+ list();paint();
+ c.onclick=ev=>{const k=$('#newkey').value;if(!k){alert('आधी वरच्या यादीतून माहिती निवडा.');return}
+  const r=c.getBoundingClientRect(),[X,Y]=vp.convertToPdfPoint((ev.clientX-r.left)*c.width/r.width,(ev.clientY-r.top)*c.height/r.height);
+  arr.push({k,x:+X.toFixed(1),y:+Y.toFixed(1),w:150,s:0});list();paint()};
+}
+$('#psave').onclick=async()=>{await saveOV();$('#ped').classList.add('hide');if(PE&&PE.done)PE.done()};
+$('#pclose').onclick=()=>$('#ped').classList.add('hide');
+/* प्रकाशन */
+const GK=['o','r','b','d'];
+function loadGh(){try{const g=JSON.parse(localStorage.getItem('vbg_gh')||'{}');GK.forEach(k=>{if(g[k])$('#gh_'+k).value=g[k]});if(g.t)$('#gh_t').value=g.t}catch(e){}}
+function ghCfg(){
+ let o=$('#gh_o').value.trim().replace(/^https?:\/\/github\.com\//i,'').replace(/\/+$/,''),r=$('#gh_r').value.trim(),b=$('#gh_b').value.trim()||'main',d=$('#gh_d').value.trim().replace(/^\/+/,''),t=$('#gh_t').value.replace(/\s+/g,'');
+ if(o.includes('@'))throw new Error('"वापरकर्ता" मध्ये GitHub username लिहा, ईमेल नाही (उदा. parshurampawar3381). github.com/<username>/<repo> या लिंकमधील पहिला भाग.');
+ if(o.includes('/')){const p=o.split('/');o=p[0];if(!r)r=p[1]||''}
+ r=r.replace(/\.git$/i,'').replace(/\s+/g,'-');
+ if(d&&!d.endsWith('/'))d+='/';
+ $('#gh_o').value=o;$('#gh_r').value=r;$('#gh_b').value=b;$('#gh_d').value=d||'docs/';
+ const g={o,r,b,d:d||'docs/',t};try{localStorage.setItem('vbg_gh',JSON.stringify(g))}catch(e){}return g;
+}
+const GH=g=>({Authorization:'Bearer '+g.t,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'});
+async function ghFetch(url,opt){try{return await fetch(url,opt)}catch(e){throw new Error('GitHub पर्यंत पोहोचता आले नाही – इंटरनेट/Wi-Fi तपासा, token मध्ये चुकीचे अक्षर नाही ना ते पाहा.')}}
+function ghErr(st,g,what){
+ if(st===401)return 'Token चुकीचा किंवा संपलेला आहे. नवीन token बनवा.';
+ if(st===403)return 'Token ला या repo (`'+g.o+'/'+g.r+'`) साठी "Contents: Read and write" परवानगी नाही, किंवा token मध्ये हा repo निवडलेला नाही. (सोपा उपाय: "classic" token बनवून `repo` निवडा.)';
+ if(st===404)return what+' सापडले नाही. तपासा: username (`'+g.o+'`), repo नाव (`'+g.r+'`), branch (`'+g.b+'`). github.com/'+g.o+'/'+g.r+' ही लिंक ब्राउझरमध्ये उघडते का?';
+ return what+' → त्रुटी '+st;
+}
+async function ghCheck(g){
+ if(!g.o||!g.r||!g.t)return 'Username, repo नाव आणि token भरा.';
+ const r=await ghFetch(`https://api.github.com/repos/${g.o}/${g.r}`,{headers:GH(g)});
+ if(!r.ok)return ghErr(r.status,g,'Repository');
+ const j=await r.json();if(j.permissions&&!j.permissions.push)return 'Token ला या repo मध्ये लिहिण्याची (Contents: Read and write) परवानगी नाही.';
+ const br=await ghFetch(`https://api.github.com/repos/${g.o}/${g.r}/branches/${encodeURIComponent(g.b)}`,{headers:GH(g)});
+ if(!br.ok)return 'Branch `'+g.b+'` सापडली नाही (बहुधा `main` असावी; repo रिकामा असेल तर आधी काही फाईल अपलोड करा).';
+ return '';
+}
+async function ghPut(g,path,b64,msg){
+ const base=`https://api.github.com/repos/${g.o}/${g.r}/contents/${path.split('/').map(encodeURIComponent).join('/')}`,H=GH(g);let last='';
+ for(let a=1;a<=4;a++){
+  try{
+   let sha;const r0=await ghFetch(base+'?ref='+encodeURIComponent(g.b)+'&t='+Date.now(),{headers:{...H,Accept:'application/vnd.github.object+json'},cache:'no-store'});
+   if(r0.ok)sha=(await r0.json()).sha;else if(r0.status!==404)throw{st:r0.status,t:await r0.text()};
+   const r=await ghFetch(base,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({message:msg,content:b64,branch:g.b,sha})});
+   if(r.ok)return;throw{st:r.status,t:await r.text()};
+  }catch(e){
+   const st=e.st;if(st===401||st===404||(st===403&&!/rate|abuse|secondary/i.test(e.t||'')))throw new Error(ghErr(st,g,path));
+   last=e.message||('त्रुटी '+st+' '+String(e.t||'').slice(0,80));if(a<4)await new Promise(r=>setTimeout(r,1800*a));
+  }
+ }
+ throw new Error(path+' → ४ वेळा प्रयत्न करूनही अयशस्वी: '+last+'. थोड्या वेळाने पुन्हा "प्रकाशित करा" दाबा (आधी झालेले काम पुन्हा होत नाही).');
+}
+const writeCfg=(g,msg)=>ghPut(g,g.d+'data/config.json',u2b64(new TextEncoder().encode(JSON.stringify({pinHash:PIN,developer:DEV}))),msg);
+$('#ghtest').onclick=async()=>{const m=$('#pubmsg');try{const g=ghCfg();m.textContent='तपासत आहे…';const e=await ghCheck(g);m.textContent=e?'❌ '+e:'✅ जोडणी बरोबर आहे. आता "प्रकाशित करा" दाबा.'}catch(e){m.textContent='❌ '+e.message}};
+$('#pub').onclick=async()=>{
+ const m=$('#pubmsg');
+ try{
+  const g=ghCfg();m.textContent='GitHub तपासत आहे…';const e0=await ghCheck(g);if(e0){m.textContent='❌ '+e0;return}
+  const d=g.d,ids=Object.keys(NEWB);
+  for(const id of ids){m.textContent='PDF अपलोड: '+id;await ghPut(g,d+'pdfs/'+id+'.pdf',u2b64(NEWB[id]),'PDF जोडली');CAT.pdfs[id].u='pdfs/'+id+'.pdf'}
+  m.textContent='कामांची यादी अपलोड…';await ghPut(g,d+'data/works.json',u2b64(new TextEncoder().encode(JSON.stringify(CAT))),'कामे अपडेट');
+  await kv('readwrite',s=>s.delete('overlay'));OV=false;NEWB={};draftNote();m.textContent='✅ प्रकाशित झाले. १-२ मिनिटांत सर्व वापरकर्त्यांच्या ॲपमध्ये दिसेल.';
+ }catch(e){m.textContent='❌ '+e.message}
+};
+$('#pinchg').onclick=async()=>{
+ const p=$('#newpin').value.trim(),m=$('#pinres');if(p.length<4){m.textContent='किमान ४ अंक.';return}
+ const old=PIN;try{const g=ghCfg();m.textContent='GitHub तपासत आहे…';const e0=await ghCheck(g);if(e0){m.textContent='❌ '+e0;return}
+  PIN=await sha(p);await writeCfg(g,'PIN बदलला');$('#newpin').value='';m.textContent='✅ PIN बदलला. १-२ मिनिटांत सर्वत्र लागू.'}catch(e){PIN=old;m.textContent='❌ '+e.message}
+};
+$('#devsave').onclick=async()=>{
+ const m=$('#devres'),nv=$('#devin').value.trim(),old=DEV;try{const g=ghCfg();m.textContent='GitHub तपासत आहे…';const e0=await ghCheck(g);if(e0){m.textContent='❌ '+e0;return}
+  DEV=nv;setDev();await writeCfg(g,'विकसक नाव');m.textContent='✅ जतन झाले. १-२ मिनिटांत सर्वत्र दिसेल.'}catch(e){DEV=old;setDev();m.textContent='❌ '+e.message}
+};
+$('#exp').onclick=async()=>{await saveBytes(new TextEncoder().encode(JSON.stringify(CAT)),'works.json')};
+$('#drop').onclick=async()=>{if(!confirm('तुमचे ड्राफ्ट बदल रद्द करायचे?'))return;await kv('readwrite',s=>s.delete('overlay'));location.reload()};
+/* सुरुवात */
+(async()=>{
+ setDev();try{await loadCat();refreshUser()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p class="err" style="padding:16px">डेटा लोड झाला नाही. इंटरनेट तपासा व पुन्हा उघडा.</p>')}
+ if(!EMBED&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body></html>
