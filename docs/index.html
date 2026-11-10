@@ -107,6 +107,7 @@ summary{cursor:pointer}
   <p class="mu">प्रत्येक रिकाम्या जागेसमोर कोणती माहिती छापायची ते निवडा. "तसेच राहू द्या" निवडलेली जागा रिकामीच राहील. नवीन जागेसाठी खालून माहिती निवडून PDF वर क्लिक करा.</p>
   <div id="plist"></div>
   <label>नवीन जागा – माहिती निवडा, मग पानावर क्लिक करा</label><select id="newkey"></select>
+  <input id="newlabel" lang="mr" placeholder="स्वतंत्र प्रश्नाचे नाव (मराठीत) – फक्त '➕ स्वतंत्र प्रश्न' निवडल्यास" style="margin-top:6px">
   <div id="pcan"></div>
   <button id="psave">जतन करा</button> <button class="o" id="pclose">बंद</button>
  </div>
@@ -135,8 +136,11 @@ const FD=[
 const FM={};FD.forEach(s=>s[1].forEach(f=>FM[f[0]]={l:f[1],t:f[2]||'t',o:f[3],df:f[4]||'',p:f[5]}));
 const BASE={nm1:'name',nm2:'name',nm3:'name',n2a:'name2',n2b:'name2',n2c:'name2',gsD:'gsDate',gsM:'gsDate',gsY:'gsDate',gsY2:'gsDate',dateD:'date',dateM:'date',dateY:'date',dateY2:'date',dateFull:'date',fy1:'year',fy2:'year',addr:'village'};
 const DL={nm1:'नावाचा पहिला शब्द',nm2:'नावाचा दुसरा शब्द',nm3:'नावाचा उर्वरित भाग',n2a:'नाव-२ पहिला शब्द',n2b:'नाव-२ दुसरा शब्द',n2c:'नाव-२ उर्वरित',gsD:'ठराव दिनांक – दिवस',gsM:'ठराव दिनांक – महिना',gsY:'ठराव दिनांक – वर्ष (४ अंक)',gsY2:'ठराव दिनांक – वर्ष (२ अंक)',dateD:'दिनांक – दिवस',dateM:'दिनांक – महिना',dateY:'दिनांक – वर्ष (४ अंक)',dateY2:'दिनांक – वर्ष (२ अंक)',dateFull:'दिनांक (पूर्ण)',fy1:'साल – सुरुवात (२ अंक)',fy2:'साल – शेवट (२ अंक)',addr:'पूर्ण पत्ता'};
-const KEYOPT='<option value="">— तसेच राहू द्या —</option>'+Object.keys(FM).map(k=>`<option value="${k}">${esc(FM[k].l)}</option>`).join('')+Object.keys(DL).map(k=>`<option value="${k}">${esc(DL[k])}</option>`).join('');
+let KEYOPT='<option value="">— तसेच राहू द्या —</option>'+Object.keys(FM).map(k=>`<option value="${k}">${esc(FM[k].l)}</option>`).join('')+Object.keys(DL).map(k=>`<option value="${k}">${esc(DL[k])}</option>`).join('');
+const nz=l=>(l||'').replace(/[\s:：.\-–_()\[\]\/]/g,'');
+function regCustom(q){if(q.k&&q.k.startsWith('x_')&&!FM[q.k])FM[q.k]={l:q.fl||q.k.slice(2),t:/दिनांक|तारीख/.test(q.fl||'')?'d':'t',df:'',custom:1}}
 const LATOK=new Set('ifsc acc job job2 no1 no2 gat gsNo gsPage age age2 ha ar ownAcre ownH ownA t1h t1a t2h t2a areaHa bpl date gsDate'.split(' '));
+KEYOPT+='<option value="__x">➕ स्वतंत्र प्रश्न (नाव लिहा)</option>';
 const b64u=b=>{const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u};
 const u2b64=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
 /* ---- साठवण (IndexedDB) ---- */
@@ -178,7 +182,7 @@ function val(k){
   case'fy2':return((v('year').split(/[-–\/]/)[1]||'').trim()).slice(-2);
   case'addr':return v('village')?[v('village'),'ता. '+v('taluka'),'जि. '+v('district')].join(', '):'';
   case'job':case'job2':return fmtJob(V[k]);
- }return v(k);
+ }const m0=FM[k];if(m0&&m0.custom&&m0.t==='d'){const x=dp(v(k));return x.y?x.d+'/'+x.m+'/'+x.y:''}return v(k);
 }
 /* ---- वापरकर्ता निवड ---- */
 function refreshUser(){
@@ -192,7 +196,7 @@ function fillWorks(){
 $('#ctype').onchange=fillWorks;
 $('#work').onchange=()=>{const i=$('#work').value;W=i===''?null:CAT.works[+i];$('#fcard').classList.toggle('hide',!W);if(W){V.work=W.w;form()}};
 const pl=(id,n)=>CAT.pages[id+':'+n]||[];
-function placements(){const r=[];W.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.s&&!W.sam)return;if(q.k)r.push(q)}));return r}
+function placements(){const r=[];W.p.forEach(([id,n])=>pl(id,n).forEach(q=>{if(q.s&&!W.sam)return;if(q.k){regCustom(q);r.push(q)}}));return r}
 function jobUI(k,label){
  const w=document.createElement('div');w.innerHTML=`<label>${esc(label)}</label><div class="jbw"><b>MH</b></div>`;const box=w.lastChild,ins=[];
  [['जिल्हा',2],['तालुका',3],['ग्रा.प.',3],['गाव',3],['कुटुंब',4],['अधिक',3]].forEach(([l,n])=>{
@@ -217,6 +221,10 @@ function form(){
    w.innerHTML=`<label>${esc(m.l)}</label>`+(m.t=='s'?`<select data-k="${f[0]}">${m.o.map(o=>`<option value="${esc(o)}">${esc(o||'— निवडा —')}</option>`).join('')}</select>`:`<input lang="mr" data-k="${f[0]}" type="${m.t=='d'?'date':'text'}">`);
    const i=w.lastChild;i.value=V[f[0]]||'';i.oninput=i.onchange=()=>{V[f[0]]=i.value;i.classList.remove('bad');keep()};g.appendChild(w)})
  });
+ const cu=[...NEED].filter(k=>FM[k]&&FM[k].custom);
+ if(cu.length){d.insertAdjacentHTML('beforeend','<h2>या फॉर्मची इतर माहिती</h2>');const g=document.createElement('div');g.className='g';d.appendChild(g);
+  cu.forEach(k=>{const m=FM[k],w=document.createElement('div');w.innerHTML=`<label>${esc(m.l)}</label><input lang="mr" data-k="${k}" type="${m.t=='d'?'date':'text'}">`;const i=w.lastChild;i.value=V[k]||'';i.oninput=i.onchange=()=>{V[k]=i.value;i.classList.remove('bad')};g.appendChild(w)})}
+ if(!NEED.size)d.innerHTML='<p class="err">या कामात भरायची माहिती सापडली नाही. Admin → कामे / पाने → ते काम → "जागा" मधून माहिती ठरवा किंवा PDF वर क्लिक करून रकाने जोडा.</p>';
 }
 function marathiCheck(){
  const bad=[];document.querySelectorAll('#fields [data-k]').forEach(e=>{const k=e.dataset.k,m=FM[k];e.classList.remove('bad');
@@ -299,12 +307,39 @@ $('#qf').onchange=async e=>{
 $('#detbtn').onclick=async()=>{
  if(!NEWPDF||!qcheck())return;const sel=[...document.querySelectorAll('#pgsel input:checked')].map(x=>+x.value);if(!sel.length){$('#detmsg').textContent='किमान एक पान निवडा.';return}
  $('#detmsg').textContent='जागा ओळखत आहे…';const N=NEWPDF;BL[N.id]=NEWB[N.id]=N.u;DOCS[N.id]=N.pdf;CAT.pdfs[N.id]={n:N.name,u:''};
- for(const n of sel)CAT.pages[N.id+':'+n]=await detectPage(N.pdf,n);
+ for(const n of sel)CAT.pages[N.id+':'+n]=await detectAny(N.pdf,n);
  const t=$('#q2').value;CAT.works.push({id:'w'+Date.now(),n:$('#q1').value.trim(),c:t,w:$('#q1').value.trim(),sam:t==='सामूहिक'?1:0,p:sel.map(n=>[N.id,n])});
+ const allp=sel.flatMap(n=>CAT.pages[N.id+':'+n]||[]).filter(q=>q.k),nm=[...new Set(allp.map(q=>q.fl||(FM[q.k]||{}).l||DL[q.k]||q.k))];
+ ANOTE=allp.length?`✅ <b>${allp.length}</b> जागा सापडल्या. मोबाईल फॉर्ममध्ये हे रकाने तयार झाले: <b>${esc(nm.join(', '))}</b>.<br>नावे चुकीची असतील तर खाली काम उघडून पानाची "जागा" दाबा; तिथे नाव बदला, चुकीची काढा किंवा नवी जोडा. नंतर "प्रकाशित करा".`:'⚠️ या PDF मध्ये रिकाम्या जागा आपोआप सापडल्या नाहीत. खाली काम उघडून "जागा" दाबा आणि PDF वर क्लिक करून रकाने जोडा.';
  await saveOV();NEWPDF=null;$('#pgbox').classList.add('hide');$('#qf').value='';$('#detmsg').textContent='';
  ['q1','q2','q3','q4'].forEach(i=>$('#'+i).value='');qcheck();atab(2);const ds=document.querySelectorAll('#a2 details');const last=ds[ds.length-1];if(last){last.open=true;last.scrollIntoView()}
 };
 /* जागा ओळखणे */
+const dev=i=>String(i).replace(/\d/g,d=>'०१२३४५६७८९'[d]);
+function lab(pre,post){
+ const cl=s=>s.replace(/^[\s\d०-९\.\)\(\-–•]+/,'').replace(/[:：_.…\-–•()\[\]]+/g,' ').replace(/\s+/g,' ').trim();
+ let a=cl(pre).split(' ').filter(Boolean).slice(-4).join(' ');
+ if(!a)a=cl(post).split(' ').filter(Boolean).slice(0,3).join(' ');
+ return a.length>40?a.slice(-40):a;
+}
+/* स्कॅन केलेल्या PDF साठी: चित्रातील आडव्या रेषा शोधणे */
+async function detectLines(pdf,n){
+ const SC=1.5,pg=await pdf.getPage(n),vp=pg.getViewport({scale:SC}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+ const ctx=c.getContext('2d',{willReadFrequently:true});ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:ctx,viewport:vp}).promise;
+ const W=c.width,H=c.height,d=ctx.getImageData(0,0,W,H).data,dk=(x,y)=>{const i=(y*W+x)*4;return d[i]+d[i+1]+d[i+2]<450};
+ const segs=[];
+ for(let y=2;y<H-2;y++){let x=0;while(x<W){if(!dk(x,y)){x++;continue}let s=x,e=x,gap=0,cnt=0;while(x<W&&gap<=2){if(dk(x,y)){e=x;gap=0;cnt++}else gap++;x++}
+  const L=e-s+1;if(L>=70&&L<W*.62&&cnt/L>.88)segs.push({y,s,e})}}
+ const lines=[];segs.forEach(g=>{const p=lines.find(l=>g.y-l.y1<=1&&Math.min(g.e,l.e)-Math.max(g.s,l.s)>.7*(g.e-g.s));if(p){p.y1=g.y;p.s=Math.min(p.s,g.s);p.e=Math.max(p.e,g.e);p.t++}else lines.push({y0:g.y,y1:g.y,s:g.s,e:g.e,t:1})});
+ const vcol=(x,y)=>{if(x<0||x>=W)return false;let k=0;for(let j=y-14;j<=y+14;j++)if(j>=0&&j<H&&dk(x,j))k++;return k>=22};
+ const out=[];let i=0;
+ lines.filter(l=>l.t<=5).sort((a,b)=>a.y1-b.y1||a.s-b.s).forEach(l=>{
+  if(vcol(l.s+1,l.y1)||vcol(l.e-1,l.y1)||vcol(l.s-2,l.y1)||vcol(l.e+2,l.y1))return;
+  i++;const[x,y]=vp.convertToPdfPoint(l.s,l.y1),fl='माहिती '+dev(i);
+  out.push({k:'x_'+nz(fl),fl,x:+(x+1).toFixed(1),y:+(y+2.5).toFixed(1),w:+((l.e-l.s)/SC-2).toFixed(1),s:0,l:'रेषा'})});
+ return out;
+}
+const detectAny=async(pdf,n)=>{let r=await detectPage(pdf,n);if(!r.length)r=await detectLines(pdf,n);return r};
 function classify(pre,post){
  const P=pre.replace(/\s+/g,''),Q=post.replace(/\s+/g,'');
  if(/सन$/.test(P))return'year';if(P==='मी')return'name';
@@ -334,14 +369,16 @@ async function detectPage(pdf,n){
    while((m=RE.exec(it.s))){if(m.index>last)seg.push({t:it.s.slice(last,m.index)});seg.push({b:1,x:it.x+it.w*m.index/len,w:it.w*m[0].length/len,y:it.y,h:it.h});last=m.index+m[0].length}
    if(last<len)seg.push({t:it.s.slice(last)})});
   seg.forEach((s,i)=>{if(!s.b||s.w<8)return;let pre='',post='';for(let j=i-1;j>=0&&!seg[j].b;j--)pre=seg[j].t+pre;for(let j=i+1;j<seg.length&&!seg[j].b;j++)post+=seg[j].t;
-   res.push({k:classify(pre,post),x:+(s.x+1).toFixed(1),y:+(s.y+1.5).toFixed(1),w:+(s.w-2).toFixed(1),s:0,l:pre.trim().slice(-22)})})
+   const k0=classify(pre,post),lb=lab(pre,post);res.push({k:k0||(lb?'x_'+nz(lb):''),fl:k0?undefined:(lb||undefined),x:+(s.x+1).toFixed(1),y:+(s.y+1.5).toFixed(1),w:+(s.w-2).toFixed(1),s:0,l:pre.trim().slice(-22)})})
  });
  return res;
 }
 /* कामे / पाने सांभाळा */
 const rng=(t,np)=>{const o=new Set();t.split(/[,\s]+/).forEach(p=>{const m=p.match(/^(\d+)(?:-(\d+))?$/);if(m){for(let i=+m[1];i<=+(m[2]||m[1]);i++)if(i>=1&&i<=np)o.add(i)}});return[...o]};
+let ANOTE='';
 function renderManage(){
  const box=$('#a2');box.innerHTML='';
+ if(ANOTE){box.insertAdjacentHTML('beforeend',`<div class="card">${ANOTE}</div>`);ANOTE=''}
  TYPES.forEach(t=>{const ws=CAT.works.map((w,i)=>[w,i]).filter(x=>x[0].c===t);if(!ws.length)return;box.insertAdjacentHTML('beforeend',`<h2>${t}</h2>`);
   ws.forEach(([w,wi])=>{const d=document.createElement('details');d.className='card';d.innerHTML=`<summary><b>${esc(w.n)}</b> <span class="mu">(${w.p.length} पाने)</span></summary><div class="wb"></div>`;d.ontoggle=()=>{if(d.open&&!d.dataset.f){d.dataset.f=1;fillWork(d,w)}};box.appendChild(d)})});
 }
@@ -368,12 +405,12 @@ async function fillWork(d,w){
  await fillWorkPages();
  wb.querySelector('.apb').onclick=async()=>{const id=wb.querySelector('.ap').value,pdf=await doc(id),ns=rng(wb.querySelector('.apn').value,pdf.numPages);
   if(!ns.length){alert('पान क्रमांक बरोबर नाही.');return}
-  for(const n of ns){if(!CAT.pages[id+':'+n])CAT.pages[id+':'+n]=await detectPage(pdf,n);w.p.push([id,n])}reload()};
+  for(const n of ns){if(!CAT.pages[id+':'+n])CAT.pages[id+':'+n]=await detectAny(pdf,n);w.p.push([id,n])}reload()};
  wb.querySelector('.apf').onchange=async e=>{const f=e.target.files[0];if(!f)return;const u=new Uint8Array(await f.arrayBuffer());let pdf;
   try{pdf=await pdfjsLib.getDocument({data:u.slice()}).promise}catch(x){alert('PDF वाचता आली नाही');return}
   const rs=wb.querySelector('.apn').value,ns=rng(rs,pdf.numPages);const use=ns.length?ns:Array.from({length:pdf.numPages},(_,i)=>i+1);
   const id='u'+Date.now();BL[id]=NEWB[id]=u;DOCS[id]=pdf;CAT.pdfs[id]={n:f.name.replace(/\.pdf$/i,''),u:''};
-  for(const n of use){CAT.pages[id+':'+n]=await detectPage(pdf,n);w.p.push([id,n])}
+  for(const n of use){CAT.pages[id+':'+n]=await detectAny(pdf,n);w.p.push([id,n])}
   wb.querySelector('.ap').innerHTML=Object.entries(CAT.pdfs).map(([k,v])=>`<option value="${k}">${esc(v.n)}</option>`).join('');reload()};
 }
 /* जागा संपादक */
@@ -383,17 +420,22 @@ async function pedit(id,n,done){
  PE={id,n,done};$('#ped').classList.remove('hide');$('#pedt').textContent=`${(CAT.pdfs[id]||{}).n||id} – पान ${n}`;
  const arr=CAT.pages[id+':'+n]=CAT.pages[id+':'+n]||[];const L=$('#plist');L.innerHTML='';
  arr.forEach((q,i)=>{const r=document.createElement('div');r.className='row';
-  r.innerHTML=`<span style="flex:1;font-size:.85rem" class="mu">${esc(q.l||(q.bx?'जॉबकार्ड चौकोन':'✋ हाताने'))}</span><select style="flex:1.4">${KEYOPT}</select><label style="margin:0;white-space:nowrap"><input type="checkbox" style="width:auto"${q.s?' checked':''}> सामूहिक</label><button class="d s">✕</button>`;
-  const sel=r.querySelector('select');sel.value=q.k||'';sel.onchange=()=>{q.k=sel.value;paint()};r.querySelector('input').onchange=e=>q.s=e.target.checked?1:0;
+  r.innerHTML=`<span style="flex:1;font-size:.85rem" class="mu">${esc(q.l||(q.bx?'जॉबकार्ड चौकोन':'✋ हाताने'))}</span><select style="flex:1.4">${KEYOPT}</select><input class="fl" lang="mr" placeholder="प्रश्नाचे नाव (मराठीत)" style="flex:1.3" value="${esc(q.fl||'')}"><label style="margin:0;white-space:nowrap"><input type="checkbox" style="width:auto"${q.s?' checked':''}> सामूहिक</label><button class="d s">✕</button>`;
+  const sel=r.querySelector('select'),fl=r.querySelector('.fl'),cb=r.querySelector('input[type=checkbox]'),cust=!!(q.k&&q.k.startsWith('x_'));
+  const sync=()=>{fl.style.display=sel.value==='__x'?'':'none'};sel.value=cust?'__x':(q.k||'');sync();
+  sel.onchange=()=>{if(sel.value==='__x'){q.fl=q.fl||'माहिती';q.k='x_'+nz(q.fl);fl.value=q.fl}else{q.k=sel.value;delete q.fl}sync();paint()};
+  fl.oninput=()=>{q.fl=fl.value.trim();q.k='x_'+nz(q.fl||'माहिती');paint()};
+  cb.onchange=e=>q.s=e.target.checked?1:0;
   r.querySelector('button').onclick=()=>{arr.splice(i,1);pedit(id,n,done)};L.appendChild(r)});
  const pg=await(await doc(id)).getPage(n),vp=pg.getViewport({scale:1.3}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
  const ctx=c.getContext('2d');await pg.render({canvasContext:ctx,viewport:vp}).promise;const img=ctx.getImageData(0,0,c.width,c.height);
  function paint(){ctx.putImageData(img,0,0);arr.forEach(q=>{const[x,y]=vp.convertToViewportPoint(q.x,q.y),ok=!!q.k;ctx.fillStyle=ok?'rgba(30,140,60,.25)':'rgba(220,50,50,.2)';ctx.strokeStyle=ok?'#1e8c3c':'#d33';
-  const w=(q.bx?(q.bx[q.bx.length-1]-q.x):q.w||60)*1.3;ctx.fillRect(x,y-13,w,16);ctx.strokeRect(x,y-13,w,16);if(ok){ctx.fillStyle='#064';ctx.font='10px '+FONT;ctx.fillText((FM[q.k]||{}).l||DL[q.k]||q.k,x,y-15)}})}
+  const w=(q.bx?(q.bx[q.bx.length-1]-q.x):q.w||60)*1.3;ctx.fillRect(x,y-13,w,16);ctx.strokeRect(x,y-13,w,16);if(ok){ctx.fillStyle='#064';ctx.font='10px '+FONT;ctx.fillText(q.fl||(FM[q.k]||{}).l||DL[q.k]||q.k,x,y-15)}})}
  paint();
- c.onclick=ev=>{const k=$('#newkey').value;if(!k){alert('आधी वरच्या यादीतून माहिती निवडा.');return}
+ c.onclick=ev=>{let k=$('#newkey').value,fl;if(!k){alert('आधी वरच्या यादीतून माहिती निवडा.');return}
+  if(k==='__x'){fl=$('#newlabel').value.trim();if(!fl){alert('स्वतंत्र प्रश्नाचे नाव लिहा.');return}k='x_'+nz(fl)}
   const r=c.getBoundingClientRect(),[X,Y]=vp.convertToPdfPoint((ev.clientX-r.left)*c.width/r.width,(ev.clientY-r.top)*c.height/r.height);
-  arr.push({k,x:+X.toFixed(1),y:+Y.toFixed(1),w:150,s:0});pedit(id,n,done)};
+  arr.push(fl?{k,fl,x:+X.toFixed(1),y:+Y.toFixed(1),w:150,s:0}:{k,x:+X.toFixed(1),y:+Y.toFixed(1),w:150,s:0});pedit(id,n,done)};
  const w=document.createElement('div');w.className='pw';w.appendChild(c);$('#pcan').innerHTML='';$('#pcan').appendChild(w);
 }
 $('#psave').onclick=async()=>{await saveOV();$('#ped').classList.add('hide');if(PE&&PE.done)PE.done()};
