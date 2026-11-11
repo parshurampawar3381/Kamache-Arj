@@ -63,7 +63,7 @@ summary{cursor:pointer}
 <section id="adm" class="hide noprint">
  <div class="top"><h1>⚙️ Admin</h1><button class="o s" id="admx">← बाहेर पडा</button></div>
  <p class="mu" id="draftnote"></p>
- <div class="tabs"><button id="at1" class="on">नवीन फॉर्म</button><button id="at2" class="o">कामे / पाने</button><button id="at3" class="o">प्रकाशित करा</button><button id="at4" class="o">अतिरिक्त माहिती</button></div>
+ <div class="tabs"><button id="at1" class="on">नवीन फॉर्म</button><button id="at2" class="o">कामे / पाने</button><button id="at3" class="o">प्रकाशित करा</button><button id="at4" class="o">अतिरिक्त माहिती</button><button id="at5" class="o">आकडेवारी</button></div>
  <div id="a1">
   <div class="card">
    <h2 style="margin-top:0">आवश्यक प्रश्न – सर्व उत्तरांनंतरच PDF स्वीकारली जाईल</h2>
@@ -118,6 +118,17 @@ summary{cursor:pointer}
    <p><button id="x_add">जोडा व जागा शोधा</button></p><p class="mu" id="x_msg"></p>
   </div>
  </div>
+ <div id="a5" class="hide">
+  <div class="card">
+   <h2 style="margin-top:0">📊 ॲप कितीजण वापरतात?</h2>
+   <p class="mu">ॲप उघडल्यावर प्रत्येक मोबाईलचा एक अनामिक क्रमांक (नाव/नंबर नाही) तुमच्या Google Sheet मध्ये नोंदवला जातो. त्यावरून एकूण किती मोबाईलवर ॲप आला, किती जण सक्रिय आहेत आणि कोणते फॉर्म किती वेळा बनले ते येथे दिसते. सेटअप मार्गदर्शकातील "आकडेवारी" भागानुसार एकदा करा.</p>
+   <label>Google Apps Script Web App URL (https://script.google.com/…/exec)</label><input id="s_url" placeholder="https://script.google.com/macros/s/…/exec">
+   <p><button class="o" id="s_save">URL जतन करा (सर्वांसाठी प्रकाशित)</button> <span class="mu" id="s_msg"></span></p>
+   <label>गुप्त शब्द (Apps Script मधील SECRET)</label><input type="password" id="s_key">
+   <p><button id="s_go">📊 आकडेवारी दाखवा</button></p>
+   <div id="s_out"></div>
+  </div>
+ </div>
  <div id="ped" class="card hide">
   <h2 style="margin-top:0">जागा तपासा – <span id="pedt"></span></h2>
   <p class="mu">प्रत्येक रिकाम्या जागेसमोर कोणती माहिती छापायची ते निवडा. "तसेच राहू द्या" निवडलेली जागा रिकामीच राहील. नवीन जागेसाठी खालून माहिती निवडून PDF वर क्लिक करा.</p>
@@ -137,7 +148,10 @@ summary{cursor:pointer}
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const FONT='"Noto Sans Devanagari",sans-serif',now=new Date(),TYPES=['वैयक्तिक','सामूहिक','सार्वजनिक'];
-let DEV='परशुराम पवार';
+let DEV='परशुराम पवार',SURL='',APPVER='3.0';
+const UID=(()=>{try{let i=localStorage.getItem('vbg_uid');if(!i){i=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem('vbg_uid',i)}return i}catch(e){return'anon'}})();
+function ping(ev,work){if(!SURL||typeof EMBED==='undefined'||EMBED)return;try{fetch(SURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({id:UID,ev,work:work||'',apk:!!window.AndroidBridge,ver:APPVER})}).catch(()=>{})}catch(e){}}
+function pingOpen(){try{if(sessionStorage.getItem('vbg_p'))return;sessionStorage.setItem('vbg_p','1')}catch(e){}ping('open')}
 function setDev(){const e=$('#devn');if(e)e.textContent=DEV;const f=$('#devf');if(f)f.style.display=DEV?'':'none'}
 const FY=(y=>y+'-'+String(y+1).slice(2))(now.getMonth()>=3?now.getFullYear():now.getFullYear()-1);
 const TODAY=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
@@ -177,7 +191,7 @@ async function loadCat(){
  if(EMBED){CAT=JSON.parse(JSON.stringify(EMBED.cat));return}
  try{CAT=await(await fetch('data/works.json?t='+Date.now(),{cache:'no-store'})).json();try{localStorage.setItem('vbg_cat',JSON.stringify(CAT))}catch(e){}}
  catch(e){const c=localStorage.getItem('vbg_cat');if(c)CAT=JSON.parse(c);else throw e}
- fetch('data/config.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(c=>{if(c.pinHash)PIN=c.pinHash;if(typeof c.developer==='string'){DEV=c.developer;setDev()}}).catch(()=>{});
+ fetch('data/config.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(c=>{if(c.pinHash)PIN=c.pinHash;if(typeof c.developer==='string'){DEV=c.developer;setDev()}if(typeof c.statsUrl==='string'&&c.statsUrl){SURL=c.statsUrl;pingOpen()}}).catch(()=>{});
 }
 async function saveOV(){OV=true;const bl={};Object.entries(NEWB).forEach(([k,v])=>bl[k]=v.slice().buffer);await kv('readwrite',s=>s.put({cat:CAT,blobs:bl},'overlay'));refreshUser();draftNote()}
 async function pdfBytes(id){
@@ -300,7 +314,7 @@ $('#gen').onclick=async()=>{
  if(!W)return;const bad=marathiCheck();
  if(bad.length){$('#ferr').textContent='कृपया दुरुस्त करा: '+bad.join(', ');return}
  $('#ferr').textContent='';$('#gen').disabled=true;$('#gen').textContent='तयार होत आहे…';
- try{await build()}catch(e){alert('त्रुटी: '+e.message)}$('#gen').disabled=false;$('#gen').textContent='PDF तयार करा';
+ try{await build();ping('pdf',W.n)}catch(e){alert('त्रुटी: '+e.message)}$('#gen').disabled=false;$('#gen').textContent='PDF तयार करा';
 };
 $('#back').onclick=()=>{$('#res').classList.add('hide');$('#p1').classList.remove('hide')};
 async function makePdf(){const D=await PDFLib.PDFDocument.create();for(const{c,w,h}of canv){const img=await D.embedJpg(c.toDataURL('image/jpeg',.92)),pg=D.addPage([w,h]);pg.drawImage(img,{x:0,y:0,width:w,height:h})}return await D.save()}
@@ -319,8 +333,8 @@ let taps=0,tt;$('#logo').onclick=()=>{taps++;clearTimeout(tt);tt=setTimeout(()=>
 $('#pinok').onclick=async()=>{if(await sha($('#pin').value)===PIN){$('#pin').value='';$('#gate').classList.add('hide');$('#p1').classList.add('hide');$('#adm').classList.remove('hide');atab(1);draftNote()}else $('#pinmsg').textContent='चुकीचा PIN'};
 $('#admx').onclick=()=>{$('#adm').classList.add('hide');$('#p1').classList.remove('hide');refreshUser()};
 function draftNote(){$('#draftnote').textContent=OV?'⚠️ तुमचे बदल फक्त या मोबाईलवर (ड्राफ्ट) आहेत. सर्वांपर्यंत पोहोचवण्यासाठी "प्रकाशित करा" टॅब वापरा.':''}
-function atab(n){[1,2,3,4].forEach(i=>{$('#a'+i).classList.toggle('hide',i!==n);$('#at'+i).classList.toggle('o',i!==n);$('#at'+i).classList.toggle('on',i===n)});$('#ped').classList.add('hide');if(n===2)renderManage();if(n===3){loadGh();$('#devin').value=DEV}if(n===4)renderExtra()}
-[1,2,3,4].forEach(i=>$('#at'+i).onclick=()=>atab(i));
+function atab(n){[1,2,3,4,5].forEach(i=>{$('#a'+i).classList.toggle('hide',i!==n);$('#at'+i).classList.toggle('o',i!==n);$('#at'+i).classList.toggle('on',i===n)});$('#ped').classList.add('hide');if(n===2)renderManage();if(n===3){loadGh();$('#devin').value=DEV}if(n===4)renderExtra();if(n===5)statsUi()}
+[1,2,3,4,5].forEach(i=>$('#at'+i).onclick=()=>atab(i));
 /* प्रश्न */
 function qcheck(){
  const n=$('#q1').value.trim(),t=$('#q2').value,m=$('#q3').value,x=$('#q4').value;let e='';
@@ -570,7 +584,7 @@ async function ghPut(g,path,b64,msg){
  }
  throw new Error(path+' → ४ वेळा प्रयत्न करूनही अयशस्वी: '+last+'. थोड्या वेळाने पुन्हा "प्रकाशित करा" दाबा (आधी झालेले काम पुन्हा होत नाही).');
 }
-const writeCfg=(g,msg)=>ghPut(g,g.d+'data/config.json',u2b64(new TextEncoder().encode(JSON.stringify({pinHash:PIN,developer:DEV}))),msg);
+const writeCfg=(g,msg)=>ghPut(g,g.d+'data/config.json',u2b64(new TextEncoder().encode(JSON.stringify({pinHash:PIN,developer:DEV,statsUrl:SURL}))),msg);
 $('#ghtest').onclick=async()=>{const m=$('#pubmsg');try{const g=ghCfg();m.textContent='तपासत आहे…';const e=await ghCheck(g);m.textContent=e?'❌ '+e:'✅ जोडणी बरोबर आहे. आता "प्रकाशित करा" दाबा.'}catch(e){m.textContent='❌ '+e.message}};
 $('#pub').onclick=async()=>{
  const m=$('#pubmsg');
@@ -593,6 +607,26 @@ $('#devsave').onclick=async()=>{
 };
 $('#exp').onclick=async()=>{await saveBytes(new TextEncoder().encode(JSON.stringify(CAT)),'works.json')};
 $('#drop').onclick=async()=>{if(!confirm('तुमचे ड्राफ्ट बदल रद्द करायचे?'))return;await kv('readwrite',s=>s.delete('overlay'));location.reload()};
+/* आकडेवारी */
+function statsUi(){$('#s_url').value=SURL||localStorage.getItem('vbg_surl')||'';$('#s_key').value=localStorage.getItem('vbg_skey')||''}
+const okUrl=u=>/^https:\/\/script\.google\.com\/.+\/exec$/.test(u);
+$('#s_save').onclick=async()=>{const u=$('#s_url').value.trim(),m=$('#s_msg');if(u&&!okUrl(u)){m.textContent='URL "https://script.google.com/…/exec" असा असावा.';return}
+ try{localStorage.setItem('vbg_surl',u)}catch(e){}const old=SURL;SURL=u;
+ try{const g=ghCfg();m.textContent='GitHub तपासत आहे…';const e0=await ghCheck(g);if(e0){SURL=old;m.textContent='❌ '+e0+' (प्रकाशित करा टॅबमध्ये GitHub माहिती भरा)';return}await writeCfg(g,'आकडेवारी URL');m.textContent='✅ जतन झाले. आता प्रत्येक ॲप उघडल्यावर नोंद होईल (१-२ मिनिटांनी सुरू).'}catch(e){SURL=old;m.textContent='❌ '+e.message}};
+$('#s_go').onclick=async()=>{
+ const u=$('#s_url').value.trim(),k=$('#s_key').value.trim(),o=$('#s_out');if(!okUrl(u)){o.innerHTML='<p class="err">आधी बरोबर Web App URL भरा.</p>';return}if(!k){o.innerHTML='<p class="err">गुप्त शब्द भरा.</p>';return}
+ try{localStorage.setItem('vbg_skey',k)}catch(e){}o.innerHTML='<p class="mu">आकडेवारी आणत आहे…</p>';
+ try{const r=await fetch(u+'?key='+encodeURIComponent(k)+'&t='+Date.now(),{cache:'no-store'});const s=await r.json();if(s.error){o.innerHTML='<p class="err">गुप्त शब्द चुकीचा आहे.</p>';return}renderStats(s)}
+ catch(e){o.innerHTML='<p class="err">आकडेवारी मिळाली नाही. URL बरोबर आहे का, आणि Apps Script "Anyone" साठी Deploy केले आहे का ते तपासा.</p>'}
+};
+function renderStats(s){
+ const c=(v,l)=>`<div class="card" style="text-align:center;margin:0"><div style="font-size:1.7rem;font-weight:700;color:var(--ac)">${v}</div><div class="mu">${l}</div></div>`;
+ const mx=Math.max(1,...s.days.map(d=>d[1]));
+ $('#s_out').innerHTML=`<div class="g" style="gap:8px;margin-top:6px">${c(s.total,'एकूण मोबाईल (ॲप उघडलेले)')}${c(s.apk,'APK ॲप वापरणारे')}${c(s.web,'ब्राउझरमधून वापरणारे')}${c(s.a1,'आज सक्रिय')}${c(s.a7,'गेल्या ७ दिवसांत सक्रिय')}${c(s.a30,'गेल्या ३० दिवसांत सक्रिय')}${c(s.opensToday,'आज ॲप उघडले (वेळा)')}${c(s.pdfTotal,'एकूण PDF तयार केल्या')}${c(s.pdf7,'गेल्या ७ दिवसांत PDF')}</div>
+ <h2>गेले १४ दिवस – रोज किती जण</h2>${s.days.map(d=>`<div class="row"><span class="mu" style="width:48px">${d[0]}</span><div style="flex:1;background:var(--bd);border-radius:6px"><div style="width:${Math.round(d[1]/mx*100)}%;min-width:${d[1]?'4px':'0'};background:var(--ac);border-radius:6px;color:#fff;font-size:.75rem;padding:0 6px">${d[1]||''}</div></div><span class="mu" style="width:70px;text-align:right">${d[2]} वेळा</span></div>`).join('')}
+ <h2>सर्वाधिक वापरलेली कामे</h2>${s.top.length?s.top.map((x,i)=>`<div class="row"><span style="flex:1">${i+1}. ${esc(x[0])}</span><b>${x[1]}</b></div>`).join(''):'<p class="mu">अजून नोंद नाही.</p>'}
+ <p class="mu">शेवटचे अपडेट: ${esc(s.updated||'')}. "एकूण मोबाईल" म्हणजे ज्या मोबाईलवर ॲप किमान एकदा उघडला गेला; ॲप काढून टाकल्याचे कळत नाही, म्हणून खरे सक्रिय वापरकर्ते पाहण्यासाठी ७/३० दिवसांची संख्या पाहा.</p>`;
+}
 /* सुरुवात */
 (async()=>{
  setDev();try{await loadCat();refreshUser()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p class="err" style="padding:16px">डेटा लोड झाला नाही. इंटरनेट तपासा व पुन्हा उघडा.</p>')}
